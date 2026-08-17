@@ -1,5 +1,8 @@
+export type PracticeVolume = "junior" | "middle" | "senior" | "web";
+
 export type PracticeChallenge = {
   id: string;
+  volume: PracticeVolume;
   title: string;
   level: string;
   task: string;
@@ -8,54 +11,48 @@ export type PracticeChallenge = {
   check: (code: string) => boolean;
 };
 
-const compact = (value: string) => value.replace(/\s+/g, " ").trim();
+const hasAll = (code: string, patterns: RegExp[]) => patterns.every((pattern) => pattern.test(code));
+
+export const practiceVolumeLabels: Record<PracticeVolume, string> = {
+  junior: "Том I · Junior",
+  middle: "Том II · Middle",
+  senior: "Том III · Senior",
+  web: "Том IV · Веб и боты",
+};
 
 export const practiceChallenges: PracticeChallenge[] = [
-  {
-    id: "hello",
-    title: "Поздоровайся с Python",
-    level: "Начало",
-    task: "Напиши одну строку, которая выведет на экран слово «Привет».",
-    hint: "Нужна функция print(), а текст должен быть в кавычках.",
-    solution: 'print("Привет")',
-    check: (code) => /print\s*\(\s*["']Привет["']\s*\)/i.test(code),
-  },
-  {
-    id: "variable",
-    title: "Сохрани имя",
-    level: "Переменные",
-    task: "Создай переменную name со своим именем, затем выведи её через print(name).",
-    hint: "Сначала: name = " + '"Аня"' + ". Затем в скобках print напиши name без кавычек.",
-    solution: 'name = "Аня"\nprint(name)',
-    check: (code) => /name\s*=\s*["'][^"']+["']/.test(code) && /print\s*\(\s*name\s*\)/.test(code),
-  },
-  {
-    id: "condition",
-    title: "Проверь оценку",
-    level: "Условия",
-    task: "Создай score = 5. Если score больше или равен 5, выведи «Отлично!».",
-    hint: "Понадобятся score = 5, строка if score >= 5: и отступ перед print.",
-    solution: 'score = 5\nif score >= 5:\n    print("Отлично!")',
-    check: (code) => /score\s*=\s*5/.test(code) && /if\s+score\s*>=\s*5\s*:/.test(code) && /print\s*\(\s*["']Отлично!["']\s*\)/i.test(code),
-  },
-  {
-    id: "loop",
-    title: "Перебери список",
-    level: "Циклы",
-    task: "Создай список tasks с двумя словами и выведи каждое дело в цикле for.",
-    hint: "Список пишется в квадратных скобках. Начало цикла: for task in tasks:.",
-    solution: 'tasks = ["уроки", "сон"]\nfor task in tasks:\n    print(task)',
-    check: (code) => /tasks\s*=\s*\[/.test(code) && /for\s+\w+\s+in\s+tasks\s*:/.test(code) && /print\s*\(\s*\w+\s*\)/.test(code),
-  },
-  {
-    id: "function",
-    title: "Сделай маленькую функцию",
-    level: "Функции",
-    task: "Напиши функцию double(number), которая возвращает number * 2.",
-    hint: "Начни с def double(number): и внутри используй return.",
-    solution: 'def double(number):\n    return number * 2',
-    check: (code) => /def\s+double\s*\(\s*number\s*\)\s*:/.test(code) && /return\s+number\s*\*\s*2/.test(compact(code)),
-  },
+  { id: "hello", volume: "junior", title: "Поздоровайся с Python", level: "Начало", task: "Выведи на экран слово «Привет».", hint: "Нужна функция print(), а текст должен быть в кавычках.", solution: 'print("Привет")', check: (code) => /print\s*\(\s*["']Привет["']\s*\)/i.test(code) },
+  { id: "variable", volume: "junior", title: "Сохрани имя", level: "Переменные", task: "Создай переменную name со своим именем, затем выведи её через print(name).", hint: "Сначала: name = " + '"Аня"' + ". Затем в print напиши name без кавычек.", solution: 'name = "Аня"\nprint(name)', check: (code) => hasAll(code, [/name\s*=\s*["'][^"']+["']/, /print\s*\(\s*name\s*\)/]) },
+  { id: "condition", volume: "junior", title: "Проверь оценку", level: "Условия", task: "Создай score = 5. Если score больше или равен 5, выведи «Отлично!». ", hint: "Понадобятся score = 5, if score >= 5: и отступ перед print.", solution: 'score = 5\nif score >= 5:\n    print("Отлично!")', check: (code) => hasAll(code, [/score\s*=\s*5/, /if\s+score\s*>=\s*5\s*:/, /print\s*\(\s*["']Отлично!["']\s*\)/i]) },
+  { id: "loop", volume: "junior", title: "Перебери список", level: "Циклы", task: "Создай список tasks с двумя словами и выведи каждое дело в цикле for.", hint: "Список пишется в квадратных скобках. Начало цикла: for task in tasks:.", solution: 'tasks = ["уроки", "сон"]\nfor task in tasks:\n    print(task)', check: (code) => hasAll(code, [/tasks\s*=\s*\[/, /for\s+\w+\s+in\s+tasks\s*:/, /print\s*\(\s*\w+\s*\)/]) },
+  { id: "function", volume: "junior", title: "Сделай маленькую функцию", level: "Функции", task: "Напиши функцию double(number), которая возвращает number * 2.", hint: "Начни с def double(number): и внутри используй return.", solution: 'def double(number):\n    return number * 2', check: (code) => hasAll(code, [/def\s+double\s*\(\s*number\s*\)\s*:/, /return\s+number\s*\*\s*2/]) },
+  { id: "list-append", volume: "junior", title: "Добавь покупку", level: "Списки", task: "Создай список shopping с «хлеб», добавь «молоко» методом append и выведи список.", hint: "Метод вызывается через точку: shopping.append(...).", solution: 'shopping = ["хлеб"]\nshopping.append("молоко")\nprint(shopping)', check: (code) => hasAll(code, [/shopping\s*=\s*\[/, /shopping\.append\s*\(/, /print\s*\(\s*shopping\s*\)/]) },
+  { id: "dictionary", volume: "junior", title: "Карточка ученика", level: "Словари", task: "Создай словарь student с ключом «name», а затем выведи student[«name»].", hint: "Словарь использует фигурные скобки и пары ключ: значение.", solution: 'student = {"name": "Ира"}\nprint(student["name"])', check: (code) => hasAll(code, [/student\s*=\s*\{/, /["']name["']/, /print\s*\(\s*student\s*\[/]) },
+  { id: "input-number", volume: "junior", title: "Преврати текст в число", level: "Ввод", task: "Запроси возраст через input и преврати его в целое число переменной age.", hint: "input всегда даёт текст. Оберни input в int(...).", solution: 'age = int(input("Сколько тебе лет? "))\nprint(age)', check: (code) => hasAll(code, [/age\s*=\s*int\s*\(\s*input\s*\(/, /print\s*\(\s*age\s*\)/]) },
+
+  { id: "json-save", volume: "middle", title: "Сохрани данные в JSON", level: "Файлы и JSON", task: "Импортируй json и сохрани словарь user в файл user.json через json.dump.", hint: "Для записи открой файл с «w» через with open(...).", solution: 'import json\nuser = {"name": "Лена"}\nwith open("user.json", "w", encoding="utf-8") as file:\n    json.dump(user, file)', check: (code) => hasAll(code, [/import\s+json/, /with\s+open\s*\(/, /json\.dump\s*\(/]) },
+  { id: "pathlib", volume: "middle", title: "Собери путь", level: "pathlib", task: "Импортируй Path и создай путь notes/today.txt через оператор /.", hint: "Сначала: from pathlib import Path. Путь можно складывать как папки.", solution: 'from pathlib import Path\npath = Path("notes") / "today.txt"\nprint(path)', check: (code) => hasAll(code, [/from\s+pathlib\s+import\s+Path/, /Path\s*\(/, /\/\s*["']today\.txt["']/]) },
+  { id: "try-except", volume: "middle", title: "Не бойся ошибки", level: "Исключения", task: "Преобразуй text в число внутри try и в except ValueError выведи «Нужно число».", hint: "try и except заканчиваются двоеточием; строка внутри имеет отступ.", solution: 'text = "кот"\ntry:\n    number = int(text)\nexcept ValueError:\n    print("Нужно число")', check: (code) => hasAll(code, [/try\s*:/, /int\s*\(\s*text\s*\)/, /except\s+ValueError\s*:/, /print\s*\(\s*["']Нужно число["']\s*\)/]) },
+  { id: "file-read", volume: "middle", title: "Прочитай заметку", level: "Файлы", task: "Открой notes.txt с кодировкой UTF-8 и прочитай текст методом read().", hint: "Удобная форма: with open(...) as file:.", solution: 'with open("notes.txt", encoding="utf-8") as file:\n    text = file.read()\nprint(text)', check: (code) => hasAll(code, [/with\s+open\s*\(/, /encoding\s*=\s*["']utf-8["']/, /\.read\s*\(\s*\)/]) },
+  { id: "dataclass", volume: "middle", title: "Опиши книгу", level: "Модели данных", task: "Импортируй dataclass и создай класс Book с полями title: str и pages: int.", hint: "Перед классом поставь @dataclass.", solution: 'from dataclasses import dataclass\n\n@dataclass\nclass Book:\n    title: str\n    pages: int', check: (code) => hasAll(code, [/from\s+dataclasses\s+import\s+dataclass/, /@dataclass/, /class\s+Book\s*:/, /title\s*:\s*str/, /pages\s*:\s*int/]) },
+  { id: "http-header", volume: "middle", title: "Вежливый HTTP-запрос", level: "HTTP", task: "Импортируй requests и создай headers с User-Agent для разрешённого запроса.", hint: "Словарь headers передают аргументом headers=...", solution: 'import requests\nheaders = {"User-Agent": "StudyBot/1.0"}\nresponse = requests.get("https://example.com", headers=headers, timeout=10)', check: (code) => hasAll(code, [/import\s+requests/, /headers\s*=\s*\{/, /["']User-Agent["']/, /requests\.get\s*\(/, /headers\s*=\s*headers/]) },
+  { id: "sqlite-create", volume: "middle", title: "Создай таблицу", level: "SQLite", task: "Импортируй sqlite3, подключись к app.db и создай курсор.", hint: "Подключение: sqlite3.connect(...), затем connection.cursor().", solution: 'import sqlite3\nconnection = sqlite3.connect("app.db")\ncursor = connection.cursor()', check: (code) => hasAll(code, [/import\s+sqlite3/, /sqlite3\.connect\s*\(/, /\.cursor\s*\(\s*\)/]) },
+
+  { id: "typed-function", volume: "senior", title: "Подскажи типы", level: "Типизация", task: "Напиши функцию add(a, b), у которой оба параметра и результат имеют тип int.", hint: "После параметра ставится : int, перед двоеточием функции — -> int.", solution: 'def add(a: int, b: int) -> int:\n    return a + b', check: (code) => hasAll(code, [/def\s+add\s*\(\s*a\s*:\s*int\s*,\s*b\s*:\s*int\s*\)\s*->\s*int\s*:/, /return\s+a\s*\+\s*b/]) },
+  { id: "pytest", volume: "senior", title: "Проверь функцию", level: "Тесты", task: "Напиши тест test_double, который проверяет double(3) == 6.", hint: "Тестовая функция начинается с test_. Внутри используется assert.", solution: 'def test_double():\n    assert double(3) == 6', check: (code) => hasAll(code, [/def\s+test_double\s*\(\s*\)\s*:/, /assert\s+double\s*\(\s*3\s*\)\s*==\s*6/]) },
+  { id: "logging", volume: "senior", title: "Запиши событие", level: "Логирование", task: "Импортируй logging, настрой basicConfig и запиши информационное сообщение.", hint: "Нужны logging.basicConfig(...) и logging.info(...).", solution: 'import logging\nlogging.basicConfig(level=logging.INFO)\nlogging.info("Программа запущена")', check: (code) => hasAll(code, [/import\s+logging/, /logging\.basicConfig\s*\(/, /logging\.info\s*\(/]) },
+  { id: "generator", volume: "senior", title: "Отдавай по одному", level: "Генераторы", task: "Напиши генератор numbers, который в цикле yield отдаёт числа от 0 до limit - 1.", hint: "Внутри функции используй for number in range(limit): и yield number.", solution: 'def numbers(limit):\n    for number in range(limit):\n        yield number', check: (code) => hasAll(code, [/def\s+numbers\s*\(\s*limit\s*\)\s*:/, /for\s+number\s+in\s+range\s*\(\s*limit\s*\)\s*:/, /yield\s+number/]) },
+  { id: "async-await", volume: "senior", title: "Подожди без остановки", level: "Асинхронность", task: "Импортируй asyncio и напиши async-функцию pause, которая ждёт одну секунду через await asyncio.sleep(1).", hint: "async ставится перед def, а await — перед задачей ожидания.", solution: 'import asyncio\n\nasync def pause():\n    await asyncio.sleep(1)', check: (code) => hasAll(code, [/import\s+asyncio/, /async\s+def\s+pause\s*\(\s*\)\s*:/, /await\s+asyncio\.sleep\s*\(\s*1\s*\)/]) },
+  { id: "decorator", volume: "senior", title: "Оберни функцию", level: "Декораторы", task: "Напиши декоратор loud, внутри которого есть wrapper и вызов func().", hint: "Декоратор принимает func, создаёт wrapper и возвращает wrapper.", solution: 'def loud(func):\n    def wrapper():\n        print("Старт")\n        func()\n    return wrapper', check: (code) => hasAll(code, [/def\s+loud\s*\(\s*func\s*\)\s*:/, /def\s+wrapper\s*\(\s*\)\s*:/, /func\s*\(\s*\)/, /return\s+wrapper/]) },
+  { id: "context-manager", volume: "senior", title: "Безопасный ресурс", level: "Контекст", task: "Импортируй contextmanager и начни функцию managed с декоратора @contextmanager и yield.", hint: "Импорт: from contextlib import contextmanager.", solution: 'from contextlib import contextmanager\n\n@contextmanager\ndef managed():\n    yield', check: (code) => hasAll(code, [/from\s+contextlib\s+import\s+contextmanager/, /@contextmanager/, /def\s+managed\s*\(\s*\)\s*:/, /yield/]) },
+
+  { id: "robots-check", volume: "web", title: "Сначала проверь правила", level: "Этика скрапинга", task: "Сформируй URL к robots.txt для сайта example.com и выведи его. Не обходи запреты сайта.", hint: "robots.txt лежит в корне: https://site/robots.txt.", solution: 'robots_url = "https://example.com/robots.txt"\nprint(robots_url)', check: (code) => hasAll(code, [/robots_url\s*=\s*["']https:\/\/example\.com\/robots\.txt["']/, /print\s*\(\s*robots_url\s*\)/]) },
+  { id: "session-cookies", volume: "web", title: "Сессия для своего аккаунта", level: "Авторизация", task: "Создай requests.Session() для разрешённой работы со своим аккаунтом и установи timeout в запросе.", hint: "Сессия создаётся так: session = requests.Session().", solution: 'import requests\nsession = requests.Session()\nresponse = session.get("https://example.com/profile", timeout=10)', check: (code) => hasAll(code, [/import\s+requests/, /requests\.Session\s*\(\s*\)/, /session\.get\s*\(/, /timeout\s*=\s*10/]) },
+  { id: "rate-limit", volume: "web", title: "Пауза между запросами", level: "Бережная автоматизация", task: "Импортируй time и поставь паузу 1.5 секунды между разрешёнными запросами.", hint: "Нужна функция time.sleep(...).", solution: 'import time\n# после разрешённого запроса\ntime.sleep(1.5)', check: (code) => hasAll(code, [/import\s+time/, /time\.sleep\s*\(\s*1\.5\s*\)/]) },
+  { id: "soup-title", volume: "web", title: "Найди заголовок", level: "Beautiful Soup", task: "Создай BeautifulSoup из html и найди первый h1 через find.", hint: "Импорт выглядит так: from bs4 import BeautifulSoup.", solution: 'from bs4 import BeautifulSoup\nsoup = BeautifulSoup(html, "html.parser")\ntitle = soup.find("h1")', check: (code) => hasAll(code, [/from\s+bs4\s+import\s+BeautifulSoup/, /BeautifulSoup\s*\(/, /\.find\s*\(\s*["']h1["']\s*\)/]) },
+  { id: "cache", volume: "web", title: "Запомни результат", level: "Кэш", task: "Создай словарь cache, сохрани в нём ответ по ключу url и затем прочитай cache[url].", hint: "Ключ в словаре указывают в квадратных скобках.", solution: 'cache = {}\ncache[url] = response\nprint(cache[url])', check: (code) => hasAll(code, [/cache\s*=\s*\{\s*\}/, /cache\s*\[\s*url\s*\]\s*=/, /cache\s*\[\s*url\s*\]/]) },
+  { id: "telegram-command", volume: "web", title: "Команда бота", level: "Telegram-бот", task: "Напиши функцию handle_start, которая возвращает приветствие пользователю бота.", hint: "Функция может принять user_name и вернуть строку через return.", solution: 'def handle_start(user_name):\n    return f"Привет, {user_name}!"', check: (code) => hasAll(code, [/def\s+handle_start\s*\(\s*user_name\s*\)\s*:/, /return\s+f["']/]) },
+  { id: "env-token", volume: "web", title: "Не клади секрет в код", level: "Безопасность", task: "Импортируй os и получи BOT_TOKEN из переменной окружения через os.getenv.", hint: "Секреты не записывают прямо в исходный код; используй os.getenv(" + '"BOT_TOKEN"' + ").", solution: 'import os\nbot_token = os.getenv("BOT_TOKEN")', check: (code) => hasAll(code, [/import\s+os/, /os\.getenv\s*\(\s*["']BOT_TOKEN["']\s*\)/]) },
 ];
 
 export function evaluatePractice(challenge: PracticeChallenge, code: string) {
