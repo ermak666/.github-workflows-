@@ -1,7 +1,7 @@
 type Value = string | number | boolean;
 type Environment = Record<string, Value>;
 
-export type LearningRunResult = { output: string[]; error?: string; consumedInputs: number };
+export type LearningRunResult = { output: string[]; variables: Record<string, Value>; error?: string; consumedInputs: number };
 
 const forbidden = /\b(import|open|exec|eval|__|os\.|sys\.|requests\.|socket|subprocess|while\b|for\b|def\b|class\b)\b/;
 const indentation = (line: string) => line.match(/^\s*/)?.[0].length ?? 0;
@@ -23,6 +23,21 @@ function evaluate(raw: string, env: Environment, inputs: string[], inputIndex: {
     return input;
   }
   if (/^input\s*\(/.test(value)) return inputs[inputIndex.value++] ?? "";
+  const conversion = value.match(/^(int|float|str)\s*\((.+)\)$/);
+  if (conversion) {
+    const source = evaluate(conversion[2], env, inputs, inputIndex);
+    if (conversion[1] === "int") {
+      const converted = Number.parseInt(String(source), 10);
+      if (Number.isNaN(converted)) throw new Error(`Нельзя превратить «${source}» в целое число.`);
+      return converted;
+    }
+    if (conversion[1] === "float") {
+      const converted = Number.parseFloat(String(source));
+      if (Number.isNaN(converted)) throw new Error(`Нельзя превратить «${source}» в дробное число.`);
+      return converted;
+    }
+    return String(source);
+  }
   const operation = value.match(/^([A-Za-z_]\w*|-?\d+(?:\.\d+)?)\s*([+\-*/])\s*([A-Za-z_]\w*|-?\d+(?:\.\d+)?)$/);
   if (operation) {
     const left = env[operation[1]] ?? Number(operation[1]); const right = env[operation[3]] ?? Number(operation[3]);
@@ -46,7 +61,7 @@ function condition(raw: string, env: Environment, inputs: string[], inputIndex: 
 }
 
 export function runLearningPython(code: string, preparedInput = ""): LearningRunResult {
-  if (forbidden.test(code)) return { output: [], error: "Учебный запуск поддерживает только безопасные основы: переменные, input(), if/else, print() и простые вычисления.", consumedInputs: 0 };
+  if (forbidden.test(code)) return { output: [], variables: {}, error: "Учебный запуск поддерживает только безопасные основы: переменные, input(), if/else, print() и простые вычисления.", consumedInputs: 0 };
   const lines = code.replace(/\r/g, "").split("\n"); const env: Environment = {}; const output: string[] = []; const inputs = preparedInput.split("\n"); const inputIndex = { value: 0 };
   try {
     for (let index = 0; index < lines.length; index += 1) {
@@ -74,6 +89,6 @@ export function runLearningPython(code: string, preparedInput = ""): LearningRun
       else if (print) output.push(String(evaluate(print[1], env, inputs, inputIndex)));
       else throw new Error(`Пока не умею выполнить строку: ${trimmed}`);
     }
-    return { output, consumedInputs: inputIndex.value };
-  } catch (error) { return { output, error: error instanceof Error ? error.message : "Не удалось выполнить пример.", consumedInputs: inputIndex.value }; }
+    return { output, variables: { ...env }, consumedInputs: inputIndex.value };
+  } catch (error) { return { output, variables: { ...env }, error: error instanceof Error ? error.message : "Не удалось выполнить пример.", consumedInputs: inputIndex.value }; }
 }
