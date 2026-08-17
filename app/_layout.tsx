@@ -10,6 +10,8 @@ import * as Notifications from "expo-notifications";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { SoundFeedbackProvider } from "@/lib/sound-feedback";
+import { inspectKnowledgeReview } from "@/lib/knowledge-review";
+import { loadCompletedLessons } from "@/lib/course-progress";
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,
@@ -69,6 +71,18 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, [router]);
 
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const completed = await loadCompletedLessons();
+      const review = await inspectKnowledgeReview(completed);
+      if (!active) return;
+      if (review.recoveryRequired) router.replace("/knowledge-check?mode=recovery" as never);
+      else if (review.weeklyPromptRequired) router.push("/knowledge-check?mode=weekly-intro" as never);
+    })();
+    return () => { active = false; };
+  }, [router]);
+
   // Create clients once and reuse them
   const [queryClient] = useState(
     () =>
@@ -126,6 +140,7 @@ export default function RootLayout() {
             <Stack.Screen name="csv-lab" />
             <Stack.Screen name="api-workshop" />
             <Stack.Screen name="bookmarks" />
+            <Stack.Screen name="knowledge-check" />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
