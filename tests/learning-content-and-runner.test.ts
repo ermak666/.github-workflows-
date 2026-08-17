@@ -32,6 +32,20 @@ describe("учебный запуск Python", () => {
     expect(result.output).toEqual(["Очки: 1"]);
   });
 
+  it("записывает и читает настоящий кэш по строковому ключу", () => {
+    const result = runLearningPython('cache = {}\nurl = "https://example.com"\ncache[url] = "сохранённый ответ"\nprint(cache[url])');
+    expect(result.error).toBeUndefined();
+    expect(result.output).toEqual(["сохранённый ответ"]);
+    expect(result.variables.cache).toMatchObject({ "https://example.com": "сохранённый ответ" });
+  });
+
+  it("поддерживает списки, append и проверку значения через in", () => {
+    const result = runLearningPython('items = []\nitems.append("готово")\nif "готово" in items:\n    print("Список работает")');
+    expect(result.error).toBeUndefined();
+    expect(result.output).toEqual(["Список работает"]);
+    expect(result.variables.items).toEqual(["готово"]);
+  });
+
   it("не выполняет опасные операции", () => {
     expect(runLearningPython('import os\nprint(os.listdir())').error).toContain("безопасные основы");
   });
