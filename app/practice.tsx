@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { CodeCard } from "@/components/code-card";
 import { ScreenContainer } from "@/components/screen-container";
 import { loadActivityProgress, recordPracticeSuccess } from "@/lib/course-progress";
+import { addErrorCard } from "@/lib/project-learning";
 import { useThemeContext } from "@/lib/theme-provider";
 import { trpc } from "@/lib/trpc";
 import { evaluatePractice, practiceChallenges, practiceVolumeLabels, type PracticeVolume } from "@/shared/practice-challenges";
@@ -58,6 +59,8 @@ export default function PracticeScreen() {
     if (result.correct) {
       const progress = await recordPracticeSuccess(challenge.id);
       setSolvedIds(progress.practiceSuccessIds);
+    } else {
+      await addErrorCard({ tag: selectedVolume, title: challenge.title, reason: result.message, correction: challenge.hint });
     }
   };
 

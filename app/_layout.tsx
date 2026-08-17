@@ -120,6 +120,10 @@ export default function RootLayout() {
             <Stack.Screen name="growth" />
             <Stack.Screen name="sandbox" />
             <Stack.Screen name="mentor-request" />
+            <Stack.Screen name="project-hub" />
+            <Stack.Screen name="skill-map" />
+            <Stack.Screen name="csv-lab" />
+            <Stack.Screen name="api-workshop" />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
