@@ -6,6 +6,7 @@ import { CodeCard } from "@/components/code-card";
 import { ScreenContainer } from "@/components/screen-container";
 import { loadActivityProgress, recordPracticeSuccess } from "@/lib/course-progress";
 import { useThemeContext } from "@/lib/theme-provider";
+import { trpc } from "@/lib/trpc";
 import { evaluatePractice, practiceChallenges, practiceVolumeLabels, type PracticeVolume } from "@/shared/practice-challenges";
 
 const volumes: PracticeVolume[] = ["junior", "middle", "senior", "web"];
@@ -21,6 +22,8 @@ export default function PracticeScreen() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [coachMessage, setCoachMessage] = useState<string | null>(null);
+  const coach = trpc.codeCoach.analyze.useMutation();
   const challenges = useMemo(() => practiceChallenges.filter((item) => item.volume === selectedVolume), [selectedVolume]);
   const challenge = challenges[index] ?? challenges[0];
   const solvedInVolume = challenges.filter((item) => solvedIds.includes(item.id)).length;
@@ -34,6 +37,7 @@ export default function PracticeScreen() {
     setIsCorrect(false);
     setShowHint(false);
     setShowSolution(false);
+    setCoachMessage(null);
   };
 
   const changeVolume = (volume: PracticeVolume) => {
@@ -54,6 +58,16 @@ export default function PracticeScreen() {
     if (result.correct) {
       const progress = await recordPracticeSuccess(challenge.id);
       setSolvedIds(progress.practiceSuccessIds);
+    }
+  };
+
+  const askCoach = async () => {
+    setCoachMessage(null);
+    try {
+      const result = await coach.mutateAsync({ code, task: challenge.task, level: practiceVolumeLabels[selectedVolume] });
+      setCoachMessage([result.headline, ...result.issues, result.hint, `Следующий шаг: ${result.nextStep}`].filter(Boolean).join("\n\n"));
+    } catch {
+      setCoachMessage("Не удалось получить подсказку сейчас. Попробуйте встроенную подсказку и повторите запрос немного позже.");
     }
   };
 
@@ -79,6 +93,7 @@ export default function PracticeScreen() {
         <Text className="mt-2 text-xs leading-4 text-muted">Проверка учебная: она ищет обязательные шаги задания и не запускает произвольный код на устройстве.</Text>
         <Pressable onPress={verify} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] })} className="mt-5 items-center rounded-2xl bg-primary py-4"><Text className="text-base font-bold text-white">Проверить ответ</Text></Pressable>
         {feedback ? <View className={`mt-4 rounded-2xl p-4 ${isCorrect ? "bg-[#DFF5ED]" : "bg-[#FFF1E8]"}`}><Text className={`font-semibold ${isCorrect ? "text-success" : "text-warning"}`}>{feedback}</Text></View> : null}
+        <View className="mt-4 rounded-3xl border border-primary bg-[#E9EAFE] p-4"><Text className="text-base font-bold text-foreground">ИИ-помощник по коду</Text><Text className="mt-1 text-sm leading-5 text-[#42446F]">Он не запускает ваш код. Помощник читает учебный фрагмент, ищет понятные ошибки и подсказывает следующий шаг.</Text><Pressable disabled={coach.isPending} onPress={askCoach} style={({ pressed }) => ({ opacity: pressed || coach.isPending ? 0.7 : 1 })} className="mt-3 items-center rounded-xl bg-primary py-3"><Text className="font-bold text-white">{coach.isPending ? "Разбираю код…" : "Попросить подсказку"}</Text></Pressable>{coachMessage ? <Text style={{ fontSize: 14 * fontScale, lineHeight: 21 * fontScale }} className="mt-3 text-foreground">{coachMessage}</Text> : null}</View>
         <View className="mt-5 flex-row gap-3"><Pressable onPress={() => setShowHint((value) => !value)} style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })} className="flex-1 rounded-2xl border border-border bg-surface py-3"><Text className="text-center font-bold text-primary">{showHint ? "Скрыть подсказку" : "Подсказка"}</Text></Pressable><Pressable onPress={() => setShowSolution((value) => !value)} style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })} className="flex-1 rounded-2xl border border-border bg-surface py-3"><Text className="text-center font-bold text-primary">{showSolution ? "Скрыть решение" : "Решение"}</Text></Pressable></View>
         {showHint ? <View className="mt-3 rounded-2xl bg-surface p-4"><Text className="font-bold text-foreground">Маленькая подсказка</Text><Text style={{ fontSize: 15 * fontScale, lineHeight: 22 * fontScale }} className="mt-2 text-foreground">{challenge.hint}</Text></View> : null}
         {showSolution ? <View className="mt-4"><Text className="mb-2 text-base font-bold text-foreground">Один из вариантов</Text><CodeCard code={challenge.solution} /></View> : null}
