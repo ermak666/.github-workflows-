@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { CodeCard } from "@/components/code-card";
 import { ScreenContainer } from "@/components/screen-container";
 import { loadCompletedLessons, toggleCompletedLesson } from "@/lib/course-progress";
+import { useThemeContext } from "@/lib/theme-provider";
 import { getLesson } from "@/shared/course-data";
 
 export default function LessonScreen() {
@@ -12,6 +13,7 @@ export default function LessonScreen() {
   const router = useRouter();
   const lesson = getLesson(id);
   const [completed, setCompleted] = useState<string[]>([]);
+  const { fontScale } = useThemeContext();
 
   useFocusEffect(useCallback(() => {
     loadCompletedLessons().then(setCompleted);
@@ -33,18 +35,18 @@ export default function LessonScreen() {
         <View className="rounded-3xl bg-[#E9EAFE] p-5">
           <Text className="text-sm font-semibold text-primary">УРОК {lesson.number}</Text>
           <Text className="mt-2 text-3xl font-bold leading-10 text-foreground">{lesson.title}</Text>
-          <Text className="mt-3 text-base leading-6 text-[#42446F]">{lesson.goal}</Text>
+          <Text style={{ fontSize: 16 * fontScale, lineHeight: 24 * fontScale }} className="mt-3 text-[#42446F]">{lesson.goal}</Text>
         </View>
 
         <Text className="mt-7 text-lg font-bold text-foreground">Представь так</Text>
-        <Text className="mt-2 text-base leading-7 text-foreground">{lesson.analogy}</Text>
+        <Text style={{ fontSize: 16 * fontScale, lineHeight: 28 * fontScale }} className="mt-2 text-foreground">{lesson.analogy}</Text>
 
         <Text className="mt-7 text-lg font-bold text-foreground">Минимальный пример</Text>
         <View className="mt-3"><CodeCard code={lesson.code} /></View>
 
         <Text className="mt-7 text-lg font-bold text-foreground">Объяснение и практика</Text>
         {paragraphs.map((paragraph, index) => (
-          <Text key={`${index}-${paragraph.slice(0, 16)}`} className="mt-3 text-base leading-7 text-foreground">
+          <Text key={`${index}-${paragraph.slice(0, 16)}`} style={{ fontSize: 16 * fontScale, lineHeight: 28 * fontScale }} className="mt-3 text-foreground">
             {paragraph.replace(/^#+\s*/, "").replace(/\|/g, " · ")}
           </Text>
         ))}
