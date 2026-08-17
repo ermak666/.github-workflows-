@@ -111,6 +111,8 @@ export default function RootLayout() {
             <Stack.Screen name="settings" />
             <Stack.Screen name="reminders" />
             <Stack.Screen name="weekly-report" />
+            <Stack.Screen name="weekly-goal" />
+            <Stack.Screen name="improvements" />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>

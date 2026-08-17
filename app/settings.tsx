@@ -44,6 +44,7 @@ export default function SettingsScreen() {
           </View>
         </View>
         <Pressable onPress={() => router.push("/reminders" as never)} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} className="mt-4 flex-row items-center justify-between rounded-3xl border border-border bg-surface p-5"><View className="flex-1"><Text className="text-lg font-bold text-foreground">Ежедневное напоминание</Text><Text className="mt-1 text-sm leading-5 text-muted">Выберите время для спокойного приглашения к практике.</Text></View><Text className="ml-3 text-xl font-bold text-primary">›</Text></Pressable>
+        <Pressable onPress={() => router.push("/improvements" as never)} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} className="mt-4 flex-row items-center justify-between rounded-3xl border border-border bg-surface p-5"><View className="flex-1"><Text className="text-lg font-bold text-foreground">Идеи развития</Text><Text className="mt-1 text-sm leading-5 text-muted">32 предложения для следующего шага приложения.</Text></View><Text className="ml-3 text-xl font-bold text-primary">›</Text></Pressable>
       </ScrollView>
     </ScreenContainer>
   );

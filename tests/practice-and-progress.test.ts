@@ -9,7 +9,9 @@ vi.mock("@react-native-async-storage/async-storage", () => ({
 }));
 
 import { buildWeeklyReport, calculateStreak } from "../lib/course-progress";
+import { getLessonQuiz } from "../shared/lesson-quiz";
 import { evaluatePractice, practiceChallenges, type PracticeVolume } from "../shared/practice-challenges";
+import { calculateGoalProgress } from "../lib/weekly-goal";
 
 describe("мини-тренажёр Python", () => {
   it("принимает корректное решение и даёт понятную обратную связь", () => {
@@ -52,10 +54,24 @@ describe("серия занятий", () => {
       activeDays: ["2026-08-11", "2026-08-15", "2026-08-17"],
       completedLessonDates: { lesson1: "2026-08-11", lesson2: "2026-08-15", old: "2026-08-10" },
       practiceSuccessDates: { hello: "2026-08-15", "json-save": "2026-08-17" },
+      quizResults: {},
     }, new Date("2026-08-17T12:00:00.000Z"));
     expect(report.lessons).toBe(2);
     expect(report.practice).toBe(2);
     expect(report.activeDays).toBe(3);
     expect(report.days).toHaveLength(7);
+  });
+});
+
+describe("быстрые тесты и недельные цели", () => {
+  it("подбирает вопрос по тематике тома для каждого урока", () => {
+    const quiz = getLessonQuiz({ id: "web-2", number: 2, title: "x", goal: "x", analogy: "x", code: "x", body: "x" });
+    expect(quiz.options).toHaveLength(3);
+    expect(quiz.options[quiz.correctIndex]).toBe("Не перегружать сайт");
+  });
+
+  it("правильно считает мотивационный прогресс недельной цели", () => {
+    expect(calculateGoalProgress(2, 5)).toEqual({ percent: 40, remaining: 3, reached: false });
+    expect(calculateGoalProgress(5, 5)).toEqual({ percent: 100, remaining: 0, reached: true });
   });
 });

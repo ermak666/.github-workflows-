@@ -1,28 +1,33 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { CodeCard } from "@/components/code-card";
 import { ScreenContainer } from "@/components/screen-container";
-import { loadCompletedLessons, toggleCompletedLesson } from "@/lib/course-progress";
+import { loadCompletedLessons, recordQuizResult, toggleCompletedLesson } from "@/lib/course-progress";
 import { useThemeContext } from "@/lib/theme-provider";
 import { getLesson } from "@/shared/course-data";
+import { getLessonQuiz } from "@/shared/lesson-quiz";
 
 export default function LessonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const lesson = getLesson(id);
   const [completed, setCompleted] = useState<string[]>([]);
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const { fontScale } = useThemeContext();
 
   useFocusEffect(useCallback(() => {
     loadCompletedLessons().then(setCompleted);
   }, []));
 
+  useEffect(() => { setSelectedOption(null); }, [lesson?.id]);
+
   if (!lesson) {
     return <ScreenContainer className="items-center justify-center p-6"><Text className="text-foreground">Урок не найден.</Text></ScreenContainer>;
   }
 
+  const quiz = getLessonQuiz(lesson);
   const done = completed.includes(lesson.id);
   const paragraphs = lesson.body.split("\n\n").filter((part) => part.trim()).slice(0, 30);
 
@@ -50,6 +55,8 @@ export default function LessonScreen() {
             {paragraph.replace(/^#+\s*/, "").replace(/\|/g, " · ")}
           </Text>
         ))}
+
+        <View className="mt-8 rounded-3xl border border-border bg-surface p-5"><Text className="text-sm font-bold uppercase tracking-wide text-primary">Быстрая проверка</Text><Text style={{ fontSize: 18 * fontScale, lineHeight: 27 * fontScale }} className="mt-3 font-bold text-foreground">{quiz.question}</Text><View className="mt-4 gap-2">{quiz.options.map((option, optionIndex) => { const chosen = selectedOption === optionIndex; const isCorrect = optionIndex === quiz.correctIndex; const afterAnswer = selectedOption !== null; const color = afterAnswer && isCorrect ? "border-success bg-[#DFF5ED]" : afterAnswer && chosen ? "border-error bg-[#FDE9ED]" : "border-border bg-background"; return <Pressable key={option} disabled={afterAnswer} onPress={async () => { setSelectedOption(optionIndex); await recordQuizResult(lesson.id, optionIndex === quiz.correctIndex); }} style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })} className={`rounded-2xl border p-4 ${color}`}><Text className={`font-semibold ${afterAnswer && isCorrect ? "text-success" : afterAnswer && chosen ? "text-error" : "text-foreground"}`}>{option}</Text></Pressable>; })}</View>{selectedOption !== null ? <Text style={{ fontSize: 14 * fontScale, lineHeight: 21 * fontScale }} className={`mt-4 ${selectedOption === quiz.correctIndex ? "text-success" : "text-warning"}`}>{selectedOption === quiz.correctIndex ? "✓ " : "Попробуйте запомнить: "}{quiz.explanation}</Text> : null}</View>
 
         <Pressable
           accessibilityRole="button"

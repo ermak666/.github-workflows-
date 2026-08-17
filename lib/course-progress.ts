@@ -8,15 +8,21 @@ export type ActivityProgress = {
   activeDays: string[];
   completedLessonDates: Record<string, string>;
   practiceSuccessDates: Record<string, string>;
+  quizResults: Record<string, boolean>;
 };
 
 const todayKey = (date = new Date()) => date.toISOString().slice(0, 10);
 
-const defaultActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {} };
+const defaultActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {}, quizResults: {} };
 
 const validDateMap = (value: unknown) => {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   return Object.fromEntries(Object.entries(value).filter(([key, date]) => typeof key === "string" && typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)));
+};
+
+const validBooleanMap = (value: unknown) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).filter(([key, result]) => typeof key === "string" && typeof result === "boolean"));
 };
 
 export async function loadActivityProgress(): Promise<ActivityProgress> {
@@ -29,6 +35,7 @@ export async function loadActivityProgress(): Promise<ActivityProgress> {
       activeDays: Array.isArray(parsed.activeDays) ? parsed.activeDays.filter((item): item is string => /^\d{4}-\d{2}-\d{2}$/.test(item)) : [],
       completedLessonDates: validDateMap(parsed.completedLessonDates),
       practiceSuccessDates: validDateMap(parsed.practiceSuccessDates),
+      quizResults: validBooleanMap(parsed.quizResults),
     };
   } catch {
     return defaultActivity;
@@ -51,6 +58,13 @@ export async function recordPracticeSuccess(challengeId: string) {
   const progress = await touchActivity();
   if (progress.practiceSuccessIds.includes(challengeId)) return progress;
   const next = { ...progress, practiceSuccessIds: [...progress.practiceSuccessIds, challengeId], practiceSuccessDates: { ...progress.practiceSuccessDates, [challengeId]: todayKey() } };
+  await saveActivity(next);
+  return next;
+}
+
+export async function recordQuizResult(lessonId: string, correct: boolean) {
+  const activity = await touchActivity();
+  const next = { ...activity, quizResults: { ...activity.quizResults, [lessonId]: correct } };
   await saveActivity(next);
   return next;
 }

@@ -4,15 +4,18 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/screen-container";
 import { buildWeeklyReport, loadActivityProgress, type ActivityProgress } from "@/lib/course-progress";
+import { calculateGoalProgress, loadWeeklyGoal, type WeeklyGoal } from "@/lib/weekly-goal";
 
-const emptyActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {} };
+const emptyActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {}, quizResults: {} };
 
 export default function WeeklyReportScreen() {
   const router = useRouter();
   const [activity, setActivity] = useState<ActivityProgress>(emptyActivity);
-  useFocusEffect(useCallback(() => { loadActivityProgress().then(setActivity); }, []));
+  const [goal, setGoal] = useState<WeeklyGoal>({ lessonTarget: 3 });
+  useFocusEffect(useCallback(() => { loadActivityProgress().then(setActivity); loadWeeklyGoal().then(setGoal); }, []));
   const report = useMemo(() => buildWeeklyReport(activity), [activity]);
   const maximum = Math.max(1, ...report.days.flatMap((day) => [day.lessons, day.practice]));
+  const goalProgress = calculateGoalProgress(report.lessons, goal.lessonTarget);
 
   return (
     <ScreenContainer className="px-5">
@@ -23,6 +26,7 @@ export default function WeeklyReportScreen() {
 
         <View className="mt-6 flex-row gap-3"><View className="flex-1 rounded-3xl bg-primary p-4"><Text className="text-3xl font-bold text-white">{report.lessons}</Text><Text className="mt-1 text-sm text-[#E7E7FF]">уроков пройдено</Text></View><View className="flex-1 rounded-3xl bg-[#172033] p-4"><Text className="text-3xl font-bold text-white">{report.practice}</Text><Text className="mt-1 text-sm text-[#D8DDEA]">задач решено</Text></View></View>
         <View className="mt-3 rounded-2xl border border-border bg-surface p-4"><Text className="text-xl font-bold text-foreground">{report.activeDays} из 7 дней</Text><Text className="mt-1 text-sm leading-5 text-muted">были отмечены учебным действием. Не нужно заниматься идеально — важнее возвращаться к материалу.</Text></View>
+        <Pressable onPress={() => router.push("/weekly-goal" as never)} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} className="mt-3 rounded-2xl bg-[#E9EAFE] p-4"><View className="flex-row items-center justify-between"><Text className="font-bold text-foreground">Цель: {goal.lessonTarget} уроков</Text><Text className="font-bold text-primary">Изменить ›</Text></View><View className="mt-3 h-2 overflow-hidden rounded-full bg-white"><View style={{ width: `${goalProgress.percent}%` }} className="h-full rounded-full bg-success" /></View><Text className="mt-2 text-sm text-[#42446F]">{goalProgress.reached ? "Неделя уже удалась: цель достигнута!" : `До цели осталось ${goalProgress.remaining} уроков.`}</Text></Pressable>
 
         <View className="mt-6 rounded-3xl border border-border bg-surface p-5"><Text className="text-lg font-bold text-foreground">Ритм недели</Text><View className="mt-3 flex-row gap-4"><View className="flex-row items-center"><View className="mr-2 h-3 w-3 rounded-full bg-primary" /><Text className="text-xs text-muted">Уроки</Text></View><View className="flex-row items-center"><View className="mr-2 h-3 w-3 rounded-full bg-success" /><Text className="text-xs text-muted">Задачи</Text></View></View><View className="mt-7 h-36 flex-row items-end justify-between">
           {report.days.map((day) => {
