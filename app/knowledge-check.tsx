@@ -16,6 +16,7 @@ export default function KnowledgeCheckScreen() {
   const [index, setIndex] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, number>>({});
 
   const questions = useMemo(() => buildReviewQuestions(completedIds ?? [], questionCount), [completedIds]);
   const recovery = mode === "recovery";
@@ -37,6 +38,8 @@ export default function KnowledgeCheckScreen() {
   const answer = async (optionIndex: number) => {
     const isCorrect = questions[index].correctIndex === optionIndex;
     const nextCorrect = correct + (isCorrect ? 1 : 0);
+    const nextAnswers = { ...answers, [questions[index].id]: optionIndex };
+    setAnswers(nextAnswers);
     if (index + 1 >= questions.length) {
       setCorrect(nextCorrect);
       setFinished(true);
@@ -46,7 +49,7 @@ export default function KnowledgeCheckScreen() {
     setCorrect(nextCorrect);
     setIndex((value) => value + 1);
   };
-  const retry = () => { setIndex(0); setCorrect(0); setFinished(false); };
+  const retry = () => { setIndex(0); setCorrect(0); setFinished(false); setAnswers({}); };
   const continueAfterSuccess = async () => { await markRecoveryPassed(); router.replace("/(tabs)" as never); };
 
   if (weeklyIntro) {
@@ -58,6 +61,9 @@ export default function KnowledgeCheckScreen() {
 
   if (finished) {
     const passed = !recovery || correct >= threshold;
+    if (!recovery) {
+      return <ScreenContainer className="px-5"><ScrollView contentContainerStyle={{ paddingVertical: 18, paddingBottom: 44 }}><View className="rounded-[30px] bg-[#111426] p-6"><Text className="text-sm font-bold tracking-widest text-[#C9C6FF]">БЛИЦ-ОПРОС ЗАВЕРШЁН</Text><Text className="mt-3 text-3xl font-bold text-white">Ваш результат: {correct}/{questionCount}</Text><Text className="mt-3 text-base leading-6 text-[#D8DDEA]">Ниже — разбор всех ответов. Ошибки — это не провал, а точная карта тем для повторения.</Text></View><Text className="mt-7 text-xl font-bold text-foreground">Подробный разбор</Text><View className="mt-4 gap-4">{questions.map((item, itemIndex) => { const answerIndex = answers[item.id]; const isCorrect = answerIndex === item.correctIndex; return <View key={item.id} style={{ borderRadius: 20, borderWidth: 1, borderColor: isCorrect ? "#A8E3D2" : "#F4C7A4", backgroundColor: isCorrect ? "#EFFAF6" : "#FFF5ED", padding: 16 }}><Text className="text-sm font-bold text-foreground">{itemIndex + 1}. {isCorrect ? "Верно" : "Нужно повторить"}</Text><Text className="mt-2 text-base font-semibold leading-6 text-foreground">{item.question}</Text><Text className="mt-3 text-sm leading-5 text-muted">Ваш ответ: {answerIndex === undefined ? "нет ответа" : item.options[answerIndex]}</Text><Text className="mt-1 text-sm font-semibold leading-5 text-foreground">Правильный ответ: {item.options[item.correctIndex]}</Text><Text className="mt-3 text-sm leading-5 text-foreground">{item.explanation}</Text><Pressable onPress={() => router.push({ pathname: "/lesson/[id]", params: { id: item.sourceLessonId } } as never)} style={({ pressed }) => [{ marginTop: 14, alignSelf: "flex-start", borderRadius: 12, backgroundColor: "#7056E8", paddingHorizontal: 13, paddingVertical: 10 }, { opacity: pressed ? 0.78 : 1 }]}><Text className="font-bold text-white">Открыть урок: {item.sourceLessonTitle} →</Text></Pressable></View>; })}</View><Pressable onPress={() => router.replace("/(tabs)" as never)} style={({ pressed }) => [{ marginTop: 24, borderRadius: 16, backgroundColor: "#18A77B", paddingVertical: 15, alignItems: "center" }, { opacity: pressed ? 0.82 : 1 }]}><Text className="font-bold text-white">Вернуться к обучению</Text></Pressable></ScrollView></ScreenContainer>;
+    }
     return <ScreenContainer className="px-5"><View className="flex-1 justify-center"><View className="rounded-[30px] bg-surface p-6"><Text className="text-sm font-bold tracking-widest text-primary">{recovery ? "ПОВТОРЕНИЕ" : "БЛИЦ-ОПРОС"}</Text><Text className="mt-3 text-3xl font-bold text-foreground">{passed ? "Отличная работа" : "Нужно повторить ещё раз"}</Text><Text className="mt-4 text-base leading-6 text-muted">Верных ответов: {correct} из {questionCount}.{recovery ? ` Для продолжения нужно минимум ${threshold}.` : " Результат сохранён в вашей учебной истории."}</Text>{passed ? <Pressable onPress={recovery ? continueAfterSuccess : () => router.replace("/(tabs)" as never)} style={({ pressed }) => [{ marginTop: 24, borderRadius: 16, backgroundColor: "#18A77B", paddingVertical: 15, alignItems: "center" }, { opacity: pressed ? 0.82 : 1 }]}><Text className="font-bold text-white">Продолжить обучение →</Text></Pressable> : <Pressable onPress={retry} style={({ pressed }) => [{ marginTop: 24, borderRadius: 16, backgroundColor: "#7056E8", paddingVertical: 15, alignItems: "center" }, { opacity: pressed ? 0.82 : 1 }]}><Text className="font-bold text-white">Начать тест сначала</Text></Pressable>}</View></View></ScreenContainer>;
   }
 
