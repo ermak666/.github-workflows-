@@ -10,10 +10,12 @@ describe("полнота учебного контура", () => {
     expect(new Set(cheatItems.map((item) => item.group)).size).toBeGreaterThanOrEqual(15);
   });
 
-  it("содержит минимум 100 задач и не меньше 25 на каждый том", () => {
-    expect(practiceChallenges.length).toBeGreaterThanOrEqual(100);
+  it("содержит минимум 100 задач на каждый том и несколько форматов практики", () => {
+    expect(practiceChallenges.length).toBeGreaterThanOrEqual(400);
     for (const volume of ["junior", "middle", "senior", "web"] as const) {
-      expect(practiceChallenges.filter((item) => item.volume === volume).length).toBeGreaterThanOrEqual(25);
+      const tasks = practiceChallenges.filter((item) => item.volume === volume);
+      expect(tasks.length).toBeGreaterThanOrEqual(100);
+      expect(new Set(tasks.map((item) => item.format ?? "Базовая задача")).size).toBeGreaterThanOrEqual(4);
     }
   });
 });

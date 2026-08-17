@@ -3,6 +3,7 @@ export type PracticeVolume = "junior" | "middle" | "senior" | "web";
 export type PracticeChallenge = {
   id: string;
   volume: PracticeVolume;
+  format?: "Написать код" | "Исправить код" | "Адаптировать код" | "Предсказать результат";
   title: string;
   level: string;
   task: string;
@@ -20,7 +21,7 @@ export const practiceVolumeLabels: Record<PracticeVolume, string> = {
   web: "Том IV · Веб и боты",
 };
 
-export const practiceChallenges: PracticeChallenge[] = [
+const basePracticeChallenges: PracticeChallenge[] = [
   { id: "hello", volume: "junior", title: "Поздоровайся с Python", level: "Начало", task: "Выведи на экран слово «Привет».", hint: "Нужна функция print(), а текст должен быть в кавычках.", solution: 'print("Привет")', check: (code) => /print\s*\(\s*["']Привет["']\s*\)/i.test(code) },
   { id: "variable", volume: "junior", title: "Сохрани имя", level: "Переменные", task: "Создай переменную name со своим именем, затем выведи её через print(name).", hint: "Сначала: name = " + '"Аня"' + ". Затем в print напиши name без кавычек.", solution: 'name = "Аня"\nprint(name)', check: (code) => hasAll(code, [/name\s*=\s*["'][^"']+["']/, /print\s*\(\s*name\s*\)/]) },
   { id: "condition", volume: "junior", title: "Проверь оценку", level: "Условия", task: "Создай score = 5. Если score больше или равен 5, выведи «Отлично!». ", hint: "Понадобятся score = 5, if score >= 5: и отступ перед print.", solution: 'score = 5\nif score >= 5:\n    print("Отлично!")', check: (code) => hasAll(code, [/score\s*=\s*5/, /if\s+score\s*>=\s*5\s*:/, /print\s*\(\s*["']Отлично!["']\s*\)/i]) },
@@ -126,6 +127,29 @@ export const practiceChallenges: PracticeChallenge[] = [
   { id: "extra-systemd-user", volume: "web", title: "Пользователь службы", level: "Сервер", task: "Напиши строку User=botuser как комментарий.", hint: "Служба должна работать от отдельного пользователя.", solution: "# User=botuser", check: (code) => code.includes("User=botuser") },
   { id: "extra-healthcheck", volume: "web", title: "Проверка здоровья", level: "Сервер", task: "Выведи короткий healthcheck-статус.", hint: "Проверка может вернуть строку «ok».", solution: "status = \"ok\"\nprint(status)", check: (code) => code.includes("status =") },
 ];
+
+const trainingFormats: Array<{
+  format: NonNullable<PracticeChallenge["format"]>;
+  intro: string;
+  hintPrefix: string;
+}> = [
+  { format: "Написать код", intro: "Напишите решение с нуля. ", hintPrefix: "Сначала составьте короткий план. " },
+  { format: "Исправить код", intro: "Представьте, что в похожем фрагменте пропущен важный шаг: напишите исправленный вариант. ", hintPrefix: "Сверьте обязательные элементы конструкции. " },
+  { format: "Адаптировать код", intro: "Примените ту же идею в небольшом личном сценарии и напишите рабочий вариант. ", hintPrefix: "Измените данные, но сохраните основную конструкцию. " },
+];
+
+const generatedPracticeChallenges: PracticeChallenge[] = basePracticeChallenges.flatMap((challenge) =>
+  trainingFormats.map((variant, index) => ({
+    ...challenge,
+    id: `drill-${challenge.id}-${index + 1}`,
+    format: variant.format,
+    title: `${challenge.title} · ${variant.format.toLowerCase()}`,
+    task: `${variant.intro}${challenge.task}`,
+    hint: `${variant.hintPrefix}${challenge.hint}`,
+  })),
+);
+
+export const practiceChallenges: PracticeChallenge[] = [...basePracticeChallenges, ...generatedPracticeChallenges];
 
 export function evaluatePractice(challenge: PracticeChallenge, code: string) {
   if (!code.trim()) return { correct: false, message: "Сначала напишите хотя бы одну строку кода." };
