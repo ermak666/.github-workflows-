@@ -5,6 +5,7 @@ import { ScreenContainer } from "@/components/screen-container";
 import { BackButton } from "@/components/back-button";
 import { useThemeContext } from "@/lib/theme-provider";
 import { useSoundFeedback } from "@/lib/sound-feedback";
+import { useColors } from "@/hooks/use-colors";
 
 const fontOptions = [
   { label: "Маленький", value: 0.9 },
@@ -16,6 +17,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { colorScheme, setColorScheme, fontScale, setFontScale } = useThemeContext();
   const { playTap } = useSoundFeedback();
+  const colors = useColors();
   return (
     <ScreenContainer className="px-5">
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
@@ -29,7 +31,7 @@ export default function SettingsScreen() {
           <View className="mt-4 flex-row gap-3">
             {(["light", "dark"] as const).map((scheme) => {
               const active = colorScheme === scheme;
-              return <Pressable key={scheme} onPress={() => { playTap(); setColorScheme(scheme); }} style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] })} className={`flex-1 items-center rounded-2xl border px-3 py-4 ${active ? colorScheme === "dark" ? "border-[#B7A9FF] bg-[#28274B]" : "border-primary bg-[#E9EAFE]" : "border-border bg-background"}`}><View className={`h-9 w-9 items-center justify-center rounded-full ${active ? "bg-surface" : "bg-surface"}`}><Text className="text-xl">{scheme === "light" ? "☀︎" : "◐"}</Text></View><Text className={`mt-2 font-bold ${active ? "text-primary" : "text-foreground"}`}>{scheme === "light" ? "Светлая" : "Тёмная"}</Text><Text className={`mt-1 text-xs ${active ? "text-primary" : "text-muted"}`}>{active ? "Выбрана" : "Выбрать"}</Text></Pressable>;
+              return <Pressable key={scheme} onPress={() => { playTap(); setColorScheme(scheme); }} style={({ pressed }) => [{ flex: 1, alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colorScheme === "dark" ? "#28274B" : "#E9EAFE" : colors.background, paddingHorizontal: 12, paddingVertical: 16 }, { opacity: pressed ? 0.78 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }]}><View className="h-9 w-9 items-center justify-center rounded-full bg-surface"><Text className="text-xl">{scheme === "light" ? "☀︎" : "◐"}</Text></View><Text className={`mt-2 font-bold ${active ? "text-primary" : "text-foreground"}`}>{scheme === "light" ? "Светлая" : "Тёмная"}</Text><Text className={`mt-1 text-xs ${active ? "text-primary" : "text-muted"}`}>{active ? "Выбрана" : "Выбрать"}</Text></Pressable>;
             })}
           </View>
         </View>
@@ -40,7 +42,7 @@ export default function SettingsScreen() {
           <View className="mt-5 flex-row gap-2">
             {fontOptions.map((option) => {
               const active = fontScale === option.value;
-              return <Pressable key={option.label} onPress={() => { playTap(); setFontScale(option.value); }} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} className={`flex-1 items-center rounded-xl border py-3 ${active ? "border-primary bg-primary" : "border-border bg-background"}`}><Text className={`font-bold ${active ? "text-white" : "text-foreground"}`}>{option.label}</Text></Pressable>;
+              return <Pressable key={option.label} onPress={() => { playTap(); setFontScale(option.value); }} style={({ pressed }) => [{ flex: 1, alignItems: "center", borderRadius: 12, borderWidth: 1, borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colors.primary : colors.background, paddingVertical: 12 }, { opacity: pressed ? 0.75 : 1 }]}><Text className={`font-bold ${active ? "text-white" : "text-foreground"}`}>{option.label}</Text></Pressable>;
             })}
           </View>
         </View>
