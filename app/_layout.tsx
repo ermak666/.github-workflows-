@@ -113,6 +113,13 @@ export default function RootLayout() {
             <Stack.Screen name="weekly-report" />
             <Stack.Screen name="weekly-goal" />
             <Stack.Screen name="improvements" />
+            <Stack.Screen name="study-lab" />
+            <Stack.Screen name="learning-tools" />
+            <Stack.Screen name="accessibility" />
+            <Stack.Screen name="focus" />
+            <Stack.Screen name="growth" />
+            <Stack.Screen name="sandbox" />
+            <Stack.Screen name="mentor-request" />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>

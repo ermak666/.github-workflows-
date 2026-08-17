@@ -1,6 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
+import * as Speech from "expo-speech";
 
 import { CodeCard } from "@/components/code-card";
 import { ScreenContainer } from "@/components/screen-container";
@@ -15,6 +16,7 @@ export default function LessonScreen() {
   const lesson = getLesson(id);
   const [completed, setCompleted] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [speaking, setSpeaking] = useState(false);
   const { fontScale } = useThemeContext();
 
   useFocusEffect(useCallback(() => {
@@ -41,6 +43,7 @@ export default function LessonScreen() {
           <Text className="text-sm font-semibold text-primary">УРОК {lesson.number}</Text>
           <Text className="mt-2 text-3xl font-bold leading-10 text-foreground">{lesson.title}</Text>
           <Text style={{ fontSize: 16 * fontScale, lineHeight: 24 * fontScale }} className="mt-3 text-[#42446F]">{lesson.goal}</Text>
+          <Pressable onPress={async () => { if (await Speech.isSpeakingAsync()) { await Speech.stop(); setSpeaking(false); return; } setSpeaking(true); Speech.speak(`${lesson.title}. ${lesson.goal}. ${lesson.analogy}`, { language: "ru-RU", rate: 0.9, onDone: () => setSpeaking(false), onStopped: () => setSpeaking(false), onError: () => setSpeaking(false) }); }} className="mt-4 self-start rounded-xl bg-white px-4 py-2"><Text className="font-bold text-primary">{speaking ? "■ Остановить озвучивание" : "▶ Прослушать объяснение"}</Text></Pressable>
         </View>
 
         <Text className="mt-7 text-lg font-bold text-foreground">Представь так</Text>

@@ -1,0 +1,12 @@
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ScreenContainer } from "@/components/screen-container";
+import { loadToolkit, saveToolkit, type ToolkitState } from "@/lib/study-toolkit";
+
+export default function MentorRequestScreen() {
+  const router = useRouter(); const [toolkit, setToolkit] = useState<ToolkitState | null>(null); const [project, setProject] = useState(""); const [question, setQuestion] = useState(""); const [sent, setSent] = useState(false);
+  useFocusEffect(useCallback(() => { loadToolkit().then(setToolkit); }, []));
+  const submit = async () => { if (!toolkit || !project.trim() || !question.trim()) return; const mentorRequests = [{ id: String(Date.now()), project: project.trim(), question: question.trim(), createdAt: new Date().toISOString(), status: "ready" as const }, ...toolkit.mentorRequests]; setToolkit(await saveToolkit({ ...toolkit, mentorRequests })); setSent(true); };
+  return <ScreenContainer className="px-5"><ScrollView contentContainerStyle={{ paddingBottom: 40 }}><Pressable onPress={() => router.back()}><Text className="mb-5 pt-2 font-semibold text-primary">‹ Назад</Text></Pressable><Text className="text-3xl font-bold text-foreground">Разбор проекта</Text><Text className="mt-2 text-base leading-6 text-muted">Подготовьте безопасную заявку: только описание задачи и вопрос. Не добавляйте пароли, токены и личные данные.</Text><View className="mt-6 rounded-3xl border border-border bg-surface p-5"><TextInput value={project} onChangeText={setProject} placeholder="Название мини-проекта" placeholderTextColor="#667085" className="rounded-xl border border-border bg-background px-3 py-3 text-foreground" /><TextInput value={question} onChangeText={setQuestion} multiline textAlignVertical="top" placeholder="Что именно вы хотите улучшить или понять?" placeholderTextColor="#667085" className="mt-3 min-h-28 rounded-xl border border-border bg-background px-3 py-3 text-foreground" /><Pressable onPress={submit} className="mt-3 items-center rounded-xl bg-primary py-3"><Text className="font-bold text-white">Сохранить заявку</Text></Pressable>{sent ? <Text className="mt-3 text-sm text-success">✓ Заявка сохранена локально и готова к безопасной передаче наставнику, когда вы выберете канал связи.</Text> : null}</View></ScrollView></ScreenContainer>;
+}

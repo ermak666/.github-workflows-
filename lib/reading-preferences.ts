@@ -7,11 +7,13 @@ const KEY = "python-bez-straha.reading-preferences.v1";
 export type ReadingPreferences = {
   colorScheme: ColorScheme;
   fontScale: number;
+  highContrast: boolean;
 };
 
 export const defaultReadingPreferences: ReadingPreferences = {
   colorScheme: "light",
   fontScale: 1,
+  highContrast: false,
 };
 
 export async function loadReadingPreferences(): Promise<ReadingPreferences> {
@@ -22,6 +24,7 @@ export async function loadReadingPreferences(): Promise<ReadingPreferences> {
     return {
       colorScheme: parsed.colorScheme === "dark" ? "dark" : "light",
       fontScale: [0.9, 1, 1.15].includes(parsed.fontScale ?? 1) ? parsed.fontScale ?? 1 : 1,
+      highContrast: parsed.highContrast === true,
     };
   } catch {
     return defaultReadingPreferences;

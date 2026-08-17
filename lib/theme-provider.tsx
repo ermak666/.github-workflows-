@@ -10,6 +10,8 @@ type ThemeContextValue = {
   setColorScheme: (scheme: ColorScheme) => void;
   fontScale: number;
   setFontScale: (scale: number) => void;
+  highContrast: boolean;
+  setHighContrast: (value: boolean) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -18,6 +20,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useSystemColorScheme() ?? "light";
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
   const [fontScale, setFontScaleState] = useState(1);
+  const [highContrast, setHighContrastState] = useState(false);
 
   const applyScheme = useCallback((scheme: ColorScheme) => {
     nativewindColorScheme.set(scheme);
@@ -33,9 +36,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const persist = useCallback((scheme: ColorScheme, scale: number) => {
-    void saveReadingPreferences({ colorScheme: scheme, fontScale: scale });
-  }, []);
+  const persist = useCallback((scheme: ColorScheme, scale: number, contrast = highContrast) => {
+    void saveReadingPreferences({ colorScheme: scheme, fontScale: scale, highContrast: contrast });
+  }, [highContrast]);
 
   const setColorScheme = useCallback((scheme: ColorScheme) => {
     setColorSchemeState(scheme);
@@ -48,10 +51,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     persist(colorScheme, scale);
   }, [colorScheme, persist]);
 
+  const setHighContrast = useCallback((value: boolean) => {
+    setHighContrastState(value);
+    persist(colorScheme, fontScale, value);
+  }, [colorScheme, fontScale, persist]);
+
   useEffect(() => {
     loadReadingPreferences().then((preferences) => {
       setColorSchemeState(preferences.colorScheme);
       setFontScaleState(preferences.fontScale);
+      setHighContrastState(preferences.highContrast);
       applyScheme(preferences.colorScheme);
     });
   }, [applyScheme]);
@@ -63,17 +72,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const themeVariables = useMemo(
     () =>
       vars({
-        "color-primary": SchemeColors[colorScheme].primary,
-        "color-background": SchemeColors[colorScheme].background,
-        "color-surface": SchemeColors[colorScheme].surface,
-        "color-foreground": SchemeColors[colorScheme].foreground,
-        "color-muted": SchemeColors[colorScheme].muted,
-        "color-border": SchemeColors[colorScheme].border,
+        "color-primary": highContrast ? (colorScheme === "dark" ? "#FFFFFF" : "#0000B8") : SchemeColors[colorScheme].primary,
+        "color-background": highContrast ? (colorScheme === "dark" ? "#000000" : "#FFFFFF") : SchemeColors[colorScheme].background,
+        "color-surface": highContrast ? (colorScheme === "dark" ? "#111111" : "#FFFFFF") : SchemeColors[colorScheme].surface,
+        "color-foreground": highContrast ? (colorScheme === "dark" ? "#FFFFFF" : "#000000") : SchemeColors[colorScheme].foreground,
+        "color-muted": highContrast ? (colorScheme === "dark" ? "#E5E5E5" : "#1A1A1A") : SchemeColors[colorScheme].muted,
+        "color-border": highContrast ? (colorScheme === "dark" ? "#FFFFFF" : "#000000") : SchemeColors[colorScheme].border,
         "color-success": SchemeColors[colorScheme].success,
         "color-warning": SchemeColors[colorScheme].warning,
         "color-error": SchemeColors[colorScheme].error,
       }),
-    [colorScheme],
+    [colorScheme, highContrast],
   );
 
   const value = useMemo(
@@ -82,8 +91,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setColorScheme,
       fontScale,
       setFontScale,
+      highContrast,
+      setHighContrast,
     }),
-    [colorScheme, fontScale, setColorScheme, setFontScale],
+    [colorScheme, fontScale, highContrast, setColorScheme, setFontScale, setHighContrast],
   );
 
   return (
