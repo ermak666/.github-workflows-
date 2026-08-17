@@ -22,6 +22,7 @@ export default function HomeScreen() {
 
   return <ScreenContainer className="px-5">
     <FlatList
+      style={{ flex: 1, width: "100%", alignSelf: "stretch" }}
       data={volumes}
       keyExtractor={(item) => item.id}
       contentContainerStyle={{ paddingTop: 14, paddingBottom: 36 }}
@@ -43,9 +44,9 @@ export default function HomeScreen() {
         <Text className="mb-6 mt-2 text-sm text-muted">{completed.length} из {allLessons.length} уроков завершено</Text>
         <Text className="mb-3 text-xl font-bold text-foreground">Четыре тома</Text>
       </View>}
-      renderItem={({ item, index }) => <Pressable accessibilityRole="button" onPress={() => { playTap(); router.push({ pathname: "/volume/[id]", params: { id: item.id } } as never); }} style={({ pressed }) => [{ marginBottom: 12, overflow: "hidden", borderRadius: 24, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 20, shadowColor: "#342D72", shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 }, { opacity: pressed ? 0.75 : 1, transform: [{ scale: pressed ? 0.99 : 1 }] }]}>
+      renderItem={({ item, index }) => <Pressable accessibilityRole="button" onPress={() => { playTap(); router.push({ pathname: "/volume/[id]", params: { id: item.id } } as never); }} style={({ pressed }) => [{ width: "100%", alignSelf: "stretch", marginBottom: 16, overflow: "hidden", borderRadius: 24, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 20, shadowColor: "#342D72", shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 }, { opacity: pressed ? 0.75 : 1, transform: [{ scale: pressed ? 0.99 : 1 }] }]}> 
         <View style={{ backgroundColor: index % 2 ? colors.success : colors.primary }} className="absolute left-0 top-0 h-full w-1.5" />
-        <View className="ml-2 flex-row items-center gap-4"><View className="flex-1"><Text className="text-sm font-bold uppercase tracking-wide text-primary">{item.lessons.length} уроков</Text><Text className="mt-2 text-lg font-bold text-foreground">{item.title}</Text><Text className="mt-2 text-sm font-bold text-muted">Открыть содержание →</Text></View><Image source={volumeArt[index]} accessibilityLabel={`Иллюстрация к ${item.title}`} resizeMode="cover" className="h-20 w-24 rounded-2xl bg-[#E7E0FF]" /></View>
+        <View style={{ width: "100%", paddingLeft: 8 }}><Text className="text-sm font-bold uppercase tracking-wide text-primary">{item.lessons.length} уроков</Text><Text className="mt-2 text-lg font-bold text-foreground">{item.title}</Text><Text className="mt-2 text-sm font-bold text-muted">Открыть содержание →</Text><Image source={volumeArt[index]} accessibilityLabel={`Иллюстрация к ${item.title}`} resizeMode="cover" style={{ width: "100%", height: 180, marginTop: 16, borderRadius: 18, backgroundColor: "#E7E0FF" }} /></View>
       </Pressable>}
     />
   </ScreenContainer>;
