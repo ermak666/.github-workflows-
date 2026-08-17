@@ -8,7 +8,7 @@ import { loadCompletedLessons } from "@/lib/course-progress";
 import { useSoundFeedback } from "@/lib/sound-feedback";
 import { volumes } from "@/shared/course-data";
 
-const volumeArt = ["/manus-storage/python-volume-junior_0b629368.png", "/manus-storage/python-volume-middle_3b26da4b.png", "/manus-storage/python-volume-senior_3826ea29.png", "/manus-storage/python-volume-web_16f2e726.png"];
+const volumeArt = [require("../../assets/images/volumes/junior.webp"), require("../../assets/images/volumes/middle.webp"), require("../../assets/images/volumes/senior.webp"), require("../../assets/images/volumes/web.webp")];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function HomeScreen() {
       </View>}
       renderItem={({ item, index }) => <Pressable accessibilityRole="button" onPress={() => { playTap(); router.push({ pathname: "/volume/[id]", params: { id: item.id } } as never); }} style={({ pressed }) => [{ marginBottom: 12, overflow: "hidden", borderRadius: 24, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 20, shadowColor: "#342D72", shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 }, { opacity: pressed ? 0.75 : 1, transform: [{ scale: pressed ? 0.99 : 1 }] }]}>
         <View style={{ backgroundColor: index % 2 ? colors.success : colors.primary }} className="absolute left-0 top-0 h-full w-1.5" />
-        <View className="ml-2 flex-row items-center gap-4"><View className="flex-1"><Text className="text-sm font-bold uppercase tracking-wide text-primary">{item.lessons.length} уроков</Text><Text className="mt-2 text-lg font-bold text-foreground">{item.title}</Text><Text className="mt-2 text-sm font-bold text-muted">Открыть содержание →</Text></View><Image source={{ uri: volumeArt[index] }} accessibilityLabel={`Иллюстрация к ${item.title}`} resizeMode="cover" className="h-20 w-24 rounded-2xl bg-[#E7E0FF]" /></View>
+        <View className="ml-2 flex-row items-center gap-4"><View className="flex-1"><Text className="text-sm font-bold uppercase tracking-wide text-primary">{item.lessons.length} уроков</Text><Text className="mt-2 text-lg font-bold text-foreground">{item.title}</Text><Text className="mt-2 text-sm font-bold text-muted">Открыть содержание →</Text></View><Image source={volumeArt[index]} accessibilityLabel={`Иллюстрация к ${item.title}`} resizeMode="cover" className="h-20 w-24 rounded-2xl bg-[#E7E0FF]" /></View>
       </Pressable>}
     />
   </ScreenContainer>;

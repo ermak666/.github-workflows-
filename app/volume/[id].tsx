@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/screen-container";
+import { BackButton } from "@/components/back-button";
 import { getVolume } from "@/shared/course-data";
 import { loadCompletedLessons } from "@/lib/course-progress";
 
@@ -28,9 +29,7 @@ export default function VolumeScreen() {
         contentContainerStyle={{ paddingBottom: 36 }}
         ListHeaderComponent={
           <View className="pb-5 pt-2">
-            <Pressable onPress={() => router.back()} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-              <Text className="mb-5 text-base font-semibold text-primary">‹ Назад</Text>
-            </Pressable>
+            <BackButton onPress={() => router.back()} />
             <Text className="text-3xl font-bold leading-10 text-foreground">{volume.title}</Text>
             <Text className="mt-2 text-base leading-6 text-muted">{volume.lessons.length} уроков. Открывайте по одному — маленький шаг тоже движение вперёд.</Text>
           </View>

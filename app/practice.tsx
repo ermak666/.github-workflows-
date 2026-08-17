@@ -3,7 +3,9 @@ import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { CodeCard } from "@/components/code-card";
+import { BackButton } from "@/components/back-button";
 import { ScreenContainer } from "@/components/screen-container";
+import { runLearningPython } from "@/lib/learning-python";
 import { loadActivityProgress, recordPracticeSuccess } from "@/lib/course-progress";
 import { addErrorCard } from "@/lib/project-learning";
 import { useThemeContext } from "@/lib/theme-provider";
@@ -24,6 +26,9 @@ export default function PracticeScreen() {
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [coachMessage, setCoachMessage] = useState<string | null>(null);
+  const [runInput, setRunInput] = useState("4");
+  const [runOutput, setRunOutput] = useState<string[] | null>(null);
+  const [runError, setRunError] = useState<string | null>(null);
   const coach = trpc.codeCoach.analyze.useMutation();
   const challenges = useMemo(() => practiceChallenges.filter((item) => item.volume === selectedVolume), [selectedVolume]);
   const challenge = challenges[index] ?? challenges[0];
@@ -39,6 +44,8 @@ export default function PracticeScreen() {
     setShowHint(false);
     setShowSolution(false);
     setCoachMessage(null);
+    setRunOutput(null);
+    setRunError(null);
   };
 
   const changeVolume = (volume: PracticeVolume) => {
@@ -77,7 +84,7 @@ export default function PracticeScreen() {
   return (
     <ScreenContainer className="px-5">
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Pressable onPress={() => router.back()} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}><Text className="mb-5 pt-2 text-base font-semibold text-primary">‹ Назад</Text></Pressable>
+        <BackButton onPress={() => router.back()} />
         <Text className="text-3xl font-bold text-foreground">Мини‑тренажёр</Text>
         <Text className="mt-2 text-base leading-6 text-muted">Переходите от простых шагов к серьёзным проектам. Каждая задача — маленькая самостоятельная победа.</Text>
         <View className="mt-5 flex-row flex-wrap gap-2">
@@ -93,7 +100,11 @@ export default function PracticeScreen() {
 
         <Text className="mt-7 text-lg font-bold text-foreground">Напишите код</Text>
         <TextInput value={code} onChangeText={setCode} multiline autoCapitalize="none" autoCorrect={false} placeholder="Напишите Python-код здесь" placeholderTextColor="#7C8498" textAlignVertical="top" style={{ minHeight: 170 }} className="mt-3 rounded-2xl border border-[#303A54] bg-[#172033] p-4 font-mono text-[14px] leading-6 text-white" />
-        <Text className="mt-2 text-xs leading-4 text-muted">Проверка учебная: она ищет обязательные шаги задания и не запускает произвольный код на устройстве.</Text>
+        <Text className="mt-2 text-xs leading-4 text-muted">Проверка учебная ищет обязательные шаги. Запуск ниже поддерживает безопасные основы Python, без файлов, сети и сторонних библиотек.</Text>
+        {code.includes("input(") ? <TextInput value={runInput} onChangeText={setRunInput} multiline placeholder="Ответы для input(), каждый с новой строки" placeholderTextColor="#7C8498" className="mt-3 rounded-xl border border-border bg-surface px-3 py-3 text-sm text-foreground" /> : null}
+        <Pressable onPress={() => { const result = runLearningPython(code, runInput); setRunOutput(result.output); setRunError(result.error ?? null); }} style={({ pressed }) => [{ marginTop: 12, alignSelf: "flex-start", borderRadius: 12, backgroundColor: "#334FCE", paddingHorizontal: 14, paddingVertical: 10 }, { opacity: pressed ? 0.78 : 1 }]}><Text className="font-bold text-white">▶ Запустить в учебном окне</Text></Pressable>
+        {runOutput ? <View className="mt-3 rounded-xl bg-[#101729] p-3"><Text className="text-xs font-bold text-[#91E0C4]">РЕЗУЛЬТАТ ВЫПОЛНЕНИЯ</Text><Text className="mt-2 font-mono text-sm text-white">{runOutput.length ? runOutput.join("\n") : "Код выполнился без вывода."}</Text></View> : null}
+        {runError ? <View className="mt-3 rounded-xl bg-[#FFF1E8] p-3"><Text className="text-sm font-semibold text-warning">{runError}</Text></View> : null}
         <Pressable onPress={verify} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] })} className="mt-5 items-center rounded-2xl bg-primary py-4"><Text className="text-base font-bold text-white">Проверить ответ</Text></Pressable>
         {feedback ? <View className={`mt-4 rounded-2xl p-4 ${isCorrect ? "bg-[#DFF5ED]" : "bg-[#FFF1E8]"}`}><Text className={`font-semibold ${isCorrect ? "text-success" : "text-warning"}`}>{feedback}</Text></View> : null}
         <View className="mt-4 rounded-3xl border border-primary bg-[#E9EAFE] p-4"><Text className="text-base font-bold text-foreground">ИИ-помощник по коду</Text><Text className="mt-1 text-sm leading-5 text-[#42446F]">Он не запускает ваш код. Помощник читает учебный фрагмент, ищет понятные ошибки и подсказывает следующий шаг.</Text><Pressable disabled={coach.isPending} onPress={askCoach} style={({ pressed }) => ({ opacity: pressed || coach.isPending ? 0.7 : 1 })} className="mt-3 items-center rounded-xl bg-primary py-3"><Text className="font-bold text-white">{coach.isPending ? "Разбираю код…" : "Попросить подсказку"}</Text></Pressable>{coachMessage ? <Text style={{ fontSize: 14 * fontScale, lineHeight: 21 * fontScale }} className="mt-3 text-foreground">{coachMessage}</Text> : null}</View>
