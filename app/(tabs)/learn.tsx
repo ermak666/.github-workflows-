@@ -1,10 +1,11 @@
 import { useRouter } from "expo-router";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { Image, FlatList, Pressable, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/screen-container";
 import { volumes } from "@/shared/course-data";
 
 const colors = ["#7056E8", "#18A77B", "#E3802A", "#4D65C7"];
+const volumeArt = ["/manus-storage/python-volume-junior_0b629368.png", "/manus-storage/python-volume-middle_3b26da4b.png", "/manus-storage/python-volume-senior_3826ea29.png", "/manus-storage/python-volume-web_16f2e726.png"];
 
 export default function LearnScreen() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function LearnScreen() {
             className="mb-4 overflow-hidden rounded-3xl border border-border bg-surface shadow-sm"
           >
             <View style={{ backgroundColor: colors[index] }} className="h-2" />
+            <Image source={{ uri: volumeArt[index] }} accessibilityLabel={`Иллюстрация к ${item.title}`} resizeMode="cover" className="h-36 w-full bg-[#E7E0FF]" />
             <View className="p-5">
               <View className="self-start rounded-full bg-background px-3 py-1"><Text className="text-xs font-bold uppercase tracking-wide text-muted">{item.lessons.length} уроков</Text></View>
               <Text className="mt-2 text-2xl font-bold leading-8 text-foreground">{item.title}</Text>

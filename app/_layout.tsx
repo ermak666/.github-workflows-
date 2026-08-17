@@ -9,6 +9,7 @@ import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { SoundFeedbackProvider } from "@/lib/sound-feedback";
 import {
   SafeAreaFrameContext,
   SafeAreaInsetsContext,
@@ -136,7 +137,7 @@ export default function RootLayout() {
 
   if (shouldOverrideSafeArea) {
     return (
-      <ThemeProvider>
+      <ThemeProvider><SoundFeedbackProvider>
         <SafeAreaProvider initialMetrics={providerInitialMetrics}>
           <SafeAreaFrameContext.Provider value={frame}>
             <SafeAreaInsetsContext.Provider value={insets}>
@@ -144,13 +145,13 @@ export default function RootLayout() {
             </SafeAreaInsetsContext.Provider>
           </SafeAreaFrameContext.Provider>
         </SafeAreaProvider>
-      </ThemeProvider>
+      </SoundFeedbackProvider></ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider>
+    <ThemeProvider><SoundFeedbackProvider>
       <SafeAreaProvider initialMetrics={providerInitialMetrics}>{content}</SafeAreaProvider>
-    </ThemeProvider>
+    </SoundFeedbackProvider></ThemeProvider>
   );
 }

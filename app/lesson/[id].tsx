@@ -4,10 +4,12 @@ import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import * as Speech from "expo-speech";
 
 import { CodeCard } from "@/components/code-card";
+import { BackButton } from "@/components/back-button";
 import { ScreenContainer } from "@/components/screen-container";
 import { loadCompletedLessons, recordQuizResult, toggleCompletedLesson } from "@/lib/course-progress";
 import { createBookmarkCategory, loadBookmarks, toggleLessonBookmark, type BookmarkState } from "@/lib/lesson-bookmarks";
 import { useThemeContext } from "@/lib/theme-provider";
+import { useSoundFeedback } from "@/lib/sound-feedback";
 import { getLesson } from "@/shared/course-data";
 import { getLessonQuiz } from "@/shared/lesson-quiz";
 
@@ -22,6 +24,7 @@ export default function LessonScreen() {
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const { fontScale } = useThemeContext();
+  const { playSuccess, playTap } = useSoundFeedback();
 
   useFocusEffect(useCallback(() => {
     loadCompletedLessons().then(setCompleted);
@@ -41,9 +44,7 @@ export default function LessonScreen() {
   return (
     <ScreenContainer className="px-5">
       <ScrollView contentContainerStyle={{ paddingBottom: 42 }} showsVerticalScrollIndicator={false}>
-        <Pressable onPress={() => router.back()} style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}>
-          <Text className="mb-5 pt-2 text-base font-semibold text-primary">‹ К содержанию</Text>
-        </Pressable>
+        <BackButton label="К содержанию" onPress={() => router.back()} />
         <View className="overflow-hidden rounded-[30px] border border-[#354062] bg-[#151A36] p-5 shadow-sm">
           <View className="absolute -right-9 -top-10 h-36 w-36 rounded-full bg-[#7056E8] opacity-45" />
           <View className="self-start rounded-full bg-[#242B4D] px-3 py-2"><Text className="text-xs font-bold tracking-widest text-[#C9C6FF]">УРОК {lesson.number}</Text></View>
@@ -70,7 +71,7 @@ export default function LessonScreen() {
 
         <Pressable
           accessibilityRole="button"
-          onPress={async () => setCompleted(await toggleCompletedLesson(lesson.id))}
+          onPress={async () => { const next = await toggleCompletedLesson(lesson.id); setCompleted(next); if (next.includes(lesson.id)) { playSuccess(); } else { playTap(); } }}
           style={({ pressed }) => ({ opacity: pressed ? 0.78 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] })}
           className={`mt-8 items-center rounded-2xl border px-5 py-4 shadow-sm ${done ? "border-success bg-[#DFF6EC]" : "border-[#8D7BFF] bg-primary"}`}
         >
