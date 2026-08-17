@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/screen-container";
-import { buildWeeklyReport, loadActivityProgress, type ActivityProgress } from "@/lib/course-progress";
+import { buildWeekComparison, buildWeeklyReport, loadActivityProgress, type ActivityProgress } from "@/lib/course-progress";
 import { calculateGoalProgress, loadWeeklyGoal, type WeeklyGoal } from "@/lib/weekly-goal";
 
 const emptyActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {}, quizResults: {} };
@@ -14,6 +14,7 @@ export default function WeeklyReportScreen() {
   const [goal, setGoal] = useState<WeeklyGoal>({ lessonTarget: 3 });
   useFocusEffect(useCallback(() => { loadActivityProgress().then(setActivity); loadWeeklyGoal().then(setGoal); }, []));
   const report = useMemo(() => buildWeeklyReport(activity), [activity]);
+  const comparison = useMemo(() => buildWeekComparison(activity), [activity]);
   const maximum = Math.max(1, ...report.days.flatMap((day) => [day.lessons, day.practice]));
   const goalProgress = calculateGoalProgress(report.lessons, goal.lessonTarget);
 
@@ -35,6 +36,8 @@ export default function WeeklyReportScreen() {
             return <View key={day.date} className="w-9 items-center"><View className="h-28 flex-row items-end gap-1"><View style={{ height: lessonHeight }} className="w-3 rounded-t-md bg-primary" /><View style={{ height: practiceHeight }} className="w-3 rounded-t-md bg-success" /></View><Text className="mt-2 text-xs font-semibold text-muted">{day.label}</Text><Text className="text-[10px] text-muted">{day.lessons + day.practice || "·"}</Text></View>;
           })}
         </View></View>
+
+        <View className="mt-5 rounded-3xl border border-border bg-surface p-5"><Text className="text-lg font-bold text-foreground">Сравнение с прошлой неделей</Text><Text className="mt-2 text-sm leading-5 text-muted">График показывает реальные действия: текущая неделя слева в каждой паре, прошлая — справа.</Text><View className="mt-5 flex-row gap-3"><View className="flex-1"><Text className="text-xs font-bold text-primary">УРОКИ</Text><View className="mt-3 h-28 flex-row items-end gap-3"><View style={{ height: Math.max(8, (comparison.current.lessons / Math.max(1, comparison.current.lessons, comparison.previous.lessons)) * 92) }} className="flex-1 rounded-t-xl bg-primary" /><View style={{ height: Math.max(8, (comparison.previous.lessons / Math.max(1, comparison.current.lessons, comparison.previous.lessons)) * 92) }} className="flex-1 rounded-t-xl bg-[#C8CAD4]" /></View><Text className="mt-2 text-sm text-muted">{comparison.current.lessons} / {comparison.previous.lessons}</Text></View><View className="flex-1"><Text className="text-xs font-bold text-success">ЗАДАЧИ</Text><View className="mt-3 h-28 flex-row items-end gap-3"><View style={{ height: Math.max(8, (comparison.current.practice / Math.max(1, comparison.current.practice, comparison.previous.practice)) * 92) }} className="flex-1 rounded-t-xl bg-success" /><View style={{ height: Math.max(8, (comparison.previous.practice / Math.max(1, comparison.current.practice, comparison.previous.practice)) * 92) }} className="flex-1 rounded-t-xl bg-[#C8CAD4]" /></View><Text className="mt-2 text-sm text-muted">{comparison.current.practice} / {comparison.previous.practice}</Text></View></View><View className="mt-4 rounded-2xl bg-[#E9EAFE] p-4"><Text className="font-bold text-foreground">{comparison.totalDelta > 0 ? `Рост на ${comparison.totalDelta} учебных действий` : comparison.totalDelta < 0 ? `На ${Math.abs(comparison.totalDelta)} действий меньше, чем на прошлой неделе` : "Темп совпадает с прошлой неделей"}</Text><Text className="mt-1 text-sm text-[#42446F]">Сравнение — не оценка. Оно помогает заметить ритм и выбрать реалистичный следующий шаг.</Text></View></View>
 
         <View className="mt-5 rounded-3xl bg-[#E9EAFE] p-5"><Text className="text-lg font-bold text-foreground">Следующий маленький шаг</Text><Text className="mt-2 text-base leading-6 text-[#42446F]">Откройте один урок или решите одну задачу в тренажёре — завтрашний столбик уже начнёт расти.</Text><Pressable onPress={() => router.push("/practice" as never)} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} className="mt-4 items-center rounded-2xl bg-primary py-3"><Text className="font-bold text-white">Открыть тренажёр</Text></Pressable></View>
       </ScrollView>

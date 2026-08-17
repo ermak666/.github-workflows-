@@ -1,11 +1,12 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import * as Speech from "expo-speech";
 
 import { CodeCard } from "@/components/code-card";
 import { ScreenContainer } from "@/components/screen-container";
 import { loadCompletedLessons, recordQuizResult, toggleCompletedLesson } from "@/lib/course-progress";
+import { createBookmarkCategory, loadBookmarks, toggleLessonBookmark, type BookmarkState } from "@/lib/lesson-bookmarks";
 import { useThemeContext } from "@/lib/theme-provider";
 import { getLesson } from "@/shared/course-data";
 import { getLessonQuiz } from "@/shared/lesson-quiz";
@@ -17,13 +18,17 @@ export default function LessonScreen() {
   const [completed, setCompleted] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [speaking, setSpeaking] = useState(false);
+  const [bookmarks, setBookmarks] = useState<BookmarkState | null>(null);
+  const [showBookmarks, setShowBookmarks] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
   const { fontScale } = useThemeContext();
 
   useFocusEffect(useCallback(() => {
     loadCompletedLessons().then(setCompleted);
+    loadBookmarks().then(setBookmarks);
   }, []));
 
-  useEffect(() => { setSelectedOption(null); }, [lesson?.id]);
+  useEffect(() => { setSelectedOption(null); setShowBookmarks(false); }, [lesson?.id]);
 
   if (!lesson) {
     return <ScreenContainer className="items-center justify-center p-6"><Text className="text-foreground">Урок не найден.</Text></ScreenContainer>;
@@ -44,7 +49,9 @@ export default function LessonScreen() {
           <Text className="mt-2 text-3xl font-bold leading-10 text-foreground">{lesson.title}</Text>
           <Text style={{ fontSize: 16 * fontScale, lineHeight: 24 * fontScale }} className="mt-3 text-[#42446F]">{lesson.goal}</Text>
           <Pressable onPress={async () => { if (await Speech.isSpeakingAsync()) { await Speech.stop(); setSpeaking(false); return; } setSpeaking(true); Speech.speak(`${lesson.title}. ${lesson.goal}. ${lesson.analogy}`, { language: "ru-RU", rate: 0.9, onDone: () => setSpeaking(false), onStopped: () => setSpeaking(false), onError: () => setSpeaking(false) }); }} className="mt-4 self-start rounded-xl bg-white px-4 py-2"><Text className="font-bold text-primary">{speaking ? "■ Остановить озвучивание" : "▶ Прослушать объяснение"}</Text></Pressable>
+          <Pressable onPress={() => setShowBookmarks((value) => !value)} className="mt-3 self-start rounded-xl border border-primary bg-[#E9EAFE] px-4 py-2"><Text className="font-bold text-primary">Добавить в закладки</Text></Pressable>
         </View>
+        {showBookmarks && bookmarks ? <View className="mt-4 rounded-3xl border border-border bg-surface p-5"><Text className="text-lg font-bold text-foreground">Категория закладки</Text><Text className="mt-2 text-sm leading-5 text-muted">Выберите одну или несколько личных папок. Повторное нажатие уберёт урок из категории.</Text><View className="mt-4 flex-row flex-wrap gap-2">{bookmarks.categories.map((category) => { const active = bookmarks.bookmarks.some((item) => item.lessonId === lesson.id && item.categoryId === category.id); return <Pressable key={category.id} onPress={async () => setBookmarks(await toggleLessonBookmark(lesson.id, category.id))} className={`rounded-full px-4 py-2 ${active ? "bg-primary" : "border border-border bg-background"}`}><Text className={`font-bold ${active ? "text-white" : "text-foreground"}`}>{active ? "✓ " : ""}{category.name}</Text></Pressable>; })}</View><View className="mt-4 flex-row gap-2"><TextInput value={newCategory} onChangeText={setNewCategory} placeholder="Новая категория" placeholderTextColor="#667085" className="flex-1 rounded-xl border border-border bg-background px-3 py-3 text-foreground" /><Pressable onPress={async () => { const next = await createBookmarkCategory(newCategory); setBookmarks(next); setNewCategory(""); }} className="items-center justify-center rounded-xl bg-primary px-4"><Text className="font-bold text-white">Создать</Text></Pressable></View></View> : null}
 
         <Text className="mt-7 text-lg font-bold text-foreground">Представь так</Text>
         <Text style={{ fontSize: 16 * fontScale, lineHeight: 28 * fontScale }} className="mt-2 text-foreground">{lesson.analogy}</Text>

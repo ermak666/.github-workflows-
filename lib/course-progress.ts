@@ -71,6 +71,7 @@ export async function recordQuizResult(lessonId: string, correct: boolean) {
 
 export type WeeklyDay = { date: string; label: string; lessons: number; practice: number };
 export type WeeklyReport = { days: WeeklyDay[]; lessons: number; practice: number; activeDays: number };
+export type WeekComparison = { current: WeeklyReport; previous: WeeklyReport; lessonsDelta: number; practiceDelta: number; totalDelta: number };
 
 export function buildWeeklyReport(activity: ActivityProgress, reference = new Date()): WeeklyReport {
   const days: WeeklyDay[] = [];
@@ -91,6 +92,20 @@ export function buildWeeklyReport(activity: ActivityProgress, reference = new Da
     lessons: days.reduce((sum, day) => sum + day.lessons, 0),
     practice: days.reduce((sum, day) => sum + day.practice, 0),
     activeDays: days.filter((day) => day.lessons + day.practice > 0).length,
+  };
+}
+
+export function buildWeekComparison(activity: ActivityProgress, reference = new Date()): WeekComparison {
+  const current = buildWeeklyReport(activity, reference);
+  const previousReference = new Date(reference);
+  previousReference.setUTCDate(previousReference.getUTCDate() - 7);
+  const previous = buildWeeklyReport(activity, previousReference);
+  return {
+    current,
+    previous,
+    lessonsDelta: current.lessons - previous.lessons,
+    practiceDelta: current.practice - previous.practice,
+    totalDelta: current.lessons + current.practice - previous.lessons - previous.practice,
   };
 }
 

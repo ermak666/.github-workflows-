@@ -124,6 +124,7 @@ export default function RootLayout() {
             <Stack.Screen name="skill-map" />
             <Stack.Screen name="csv-lab" />
             <Stack.Screen name="api-workshop" />
+            <Stack.Screen name="bookmarks" />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
