@@ -73,7 +73,7 @@ export default function LessonScreen() {
   };
 
   if (!lesson) {
-    return <ScreenContainer className="items-center justify-center p-6"><Text className="text-foreground">Урок не найден.</Text></ScreenContainer>;
+    return <ScreenContainer className="items-center justify-center p-6"><View className="w-full max-w-sm rounded-3xl border border-border bg-surface p-6"><Text className="text-xl font-bold text-foreground">Урок не найден</Text><Text className="mt-3 text-sm leading-5 text-muted">Возможно, ссылка устарела. Вернитесь к содержанию и выберите нужный урок из списка.</Text><Pressable accessibilityRole="button" onPress={() => router.replace("/learn" as never)} style={({ pressed }) => ({ marginTop: 20, alignItems: "center", borderRadius: 16, backgroundColor: colors.primary, paddingVertical: 14, opacity: pressed ? 0.78 : 1 })}><Text className="font-bold text-white">Открыть учебник</Text></Pressable></View></ScreenContainer>;
   }
 
   const quiz = getLessonQuiz(lesson);
