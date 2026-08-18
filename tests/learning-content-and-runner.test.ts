@@ -51,6 +51,11 @@ describe("учебный запуск Python", () => {
   it("не выполняет опасные операции", () => {
     expect(runLearningPython('import os\nprint(os.listdir())').error).toContain("безопасные основы");
   });
+
+  it("не выдаёт успех для циклов и сетевых библиотек, которые учебный запуск не поддерживает", () => {
+    expect(runLearningPython("for number in range(5):\n    print(number)").error).toContain("безопасные основы");
+    expect(runLearningPython('import requests\nrequests.get("https://example.com")').error).toContain("безопасные основы");
+  });
 });
 
 describe("последовательное прохождение томов", () => {
