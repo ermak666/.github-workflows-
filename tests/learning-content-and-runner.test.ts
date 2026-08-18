@@ -59,6 +59,8 @@ describe("последовательное прохождение томов", (
     const navigation = getLessonNavigation(firstVolume.lessons[1].id);
     expect(navigation?.previousLesson?.id).toBe(firstVolume.lessons[0].id);
     expect(navigation?.nextLesson?.id).toBe(firstVolume.lessons[2].id);
+    expect(navigation?.lessonIndex).toBe(2);
+    expect(navigation?.lessonCount).toBe(firstVolume.lessons.length);
     expect(getNextVolume(firstVolume.id)?.id).toBe(volumes[1].id);
     expect(getNextVolume(volumes.at(-1)?.id)).toBeUndefined();
   });
@@ -68,6 +70,11 @@ describe("последовательное прохождение томов", (
     expect(isVolumeComplete(firstVolume, firstVolume.lessons.slice(0, -1).map((lesson) => lesson.id))).toBe(false);
     expect(isVolumeComplete(firstVolume, firstVolume.lessons.map((lesson) => lesson.id))).toBe(true);
     expect(volumeFinalTasks).toHaveLength(volumes.length);
-    expect(getVolumeFinalTask(firstVolume.id)?.correctIndex).toBeGreaterThanOrEqual(0);
+    expect(getVolumeFinalTask(firstVolume.id)?.questions).toHaveLength(3);
+    for (const task of volumeFinalTasks) {
+      expect(task.questions.length).toBeGreaterThanOrEqual(3);
+      expect(task.questions.length).toBeLessThanOrEqual(5);
+      expect(task.questions.every((question) => question.correctIndex >= 0 && question.correctIndex < question.options.length)).toBe(true);
+    }
   });
 });

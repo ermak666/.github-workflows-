@@ -34,6 +34,8 @@ export function getLessonNavigation(lessonId: string | undefined) {
     if (index >= 0) {
       return {
         volume,
+        lessonIndex: index + 1,
+        lessonCount: volume.lessons.length,
         previousLesson: volume.lessons[index - 1],
         nextLesson: volume.lessons[index + 1],
         nextVolume: getNextVolume(volume.id),

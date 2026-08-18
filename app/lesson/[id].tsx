@@ -88,7 +88,7 @@ export default function LessonScreen() {
         <BackButton label="К содержанию" onPress={() => router.back()} />
         <View className="overflow-hidden rounded-[30px] border border-[#354062] bg-[#151A36] p-5 shadow-sm">
           <View className="absolute -right-9 -top-10 h-36 w-36 rounded-full bg-[#7056E8] opacity-45" />
-          <View className="self-start rounded-full bg-[#242B4D] px-3 py-2"><Text className="text-xs font-bold tracking-widest text-[#C9C6FF]">УРОК {lesson.number}</Text></View>
+          <View className="self-start rounded-full bg-[#242B4D] px-3 py-2"><Text className="text-xs font-bold tracking-widest text-[#C9C6FF]">УРОК {navigation?.lessonIndex ?? lesson.number} ИЗ {navigation?.lessonCount ?? 1}</Text></View>
           <Text className="mt-3 text-3xl font-bold leading-10 text-white">{lesson.title}</Text>
           <Text style={{ fontSize: 16 * fontScale, lineHeight: 24 * fontScale }} className="mt-3 text-[#D8DDEA]">{lesson.goal}</Text>
           <View className="mt-5 flex-row flex-wrap gap-2">{speechAvailable === true ? <Pressable accessibilityRole="button" onPress={speakLesson} style={({ pressed }) => [{ borderRadius: 999, backgroundColor: "#E7E0FF", paddingHorizontal: 16, paddingVertical: 12 }, { opacity: pressed ? 0.8 : 1 }]}><Text className="font-bold text-primary">{speaking ? "■ Остановить" : "▶ Слушать"}</Text></Pressable> : null}<Pressable accessibilityRole="button" onPress={() => setShowBookmarks((value) => !value)} style={({ pressed }) => [{ borderRadius: 999, borderWidth: 1, borderColor: "#6872AA", backgroundColor: "#242B4D", paddingHorizontal: 16, paddingVertical: 12 }, { opacity: pressed ? 0.8 : 1 }]}><Text className="font-bold text-white">В закладки</Text></Pressable></View>

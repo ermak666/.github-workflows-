@@ -10,11 +10,14 @@ export type ActivityProgress = {
   practiceSuccessDates: Record<string, string>;
   quizResults: Record<string, boolean>;
   volumeFinals?: Record<string, boolean>;
+  volumeFinalTestVersions?: Record<string, number>;
 };
+
+export const VOLUME_FINAL_TEST_VERSION = 2;
 
 const todayKey = (date = new Date()) => date.toISOString().slice(0, 10);
 
-const defaultActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {}, quizResults: {}, volumeFinals: {} };
+const defaultActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {}, quizResults: {}, volumeFinals: {}, volumeFinalTestVersions: {} };
 
 const validDateMap = (value: unknown) => {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -24,6 +27,11 @@ const validDateMap = (value: unknown) => {
 const validBooleanMap = (value: unknown) => {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   return Object.fromEntries(Object.entries(value).filter(([key, result]) => typeof key === "string" && typeof result === "boolean"));
+};
+
+const validNumberMap = (value: unknown) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).filter(([key, result]) => typeof key === "string" && typeof result === "number" && Number.isInteger(result) && result >= 1));
 };
 
 export async function loadActivityProgress(): Promise<ActivityProgress> {
@@ -38,6 +46,7 @@ export async function loadActivityProgress(): Promise<ActivityProgress> {
       practiceSuccessDates: validDateMap(parsed.practiceSuccessDates),
       quizResults: validBooleanMap(parsed.quizResults),
       volumeFinals: validBooleanMap(parsed.volumeFinals),
+      volumeFinalTestVersions: validNumberMap(parsed.volumeFinalTestVersions),
     };
   } catch {
     return defaultActivity;
@@ -73,7 +82,7 @@ export async function recordQuizResult(lessonId: string, correct: boolean) {
 
 export async function recordVolumeFinalSuccess(volumeId: string) {
   const activity = await touchActivity();
-  const next = { ...activity, volumeFinals: { ...(activity.volumeFinals ?? {}), [volumeId]: true } };
+  const next = { ...activity, volumeFinals: { ...(activity.volumeFinals ?? {}), [volumeId]: true }, volumeFinalTestVersions: { ...(activity.volumeFinalTestVersions ?? {}), [volumeId]: VOLUME_FINAL_TEST_VERSION } };
   await saveActivity(next);
   return next;
 }
