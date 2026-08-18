@@ -9,11 +9,12 @@ export type ActivityProgress = {
   completedLessonDates: Record<string, string>;
   practiceSuccessDates: Record<string, string>;
   quizResults: Record<string, boolean>;
+  volumeFinals?: Record<string, boolean>;
 };
 
 const todayKey = (date = new Date()) => date.toISOString().slice(0, 10);
 
-const defaultActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {}, quizResults: {} };
+const defaultActivity: ActivityProgress = { practiceSuccessIds: [], activeDays: [], completedLessonDates: {}, practiceSuccessDates: {}, quizResults: {}, volumeFinals: {} };
 
 const validDateMap = (value: unknown) => {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -36,6 +37,7 @@ export async function loadActivityProgress(): Promise<ActivityProgress> {
       completedLessonDates: validDateMap(parsed.completedLessonDates),
       practiceSuccessDates: validDateMap(parsed.practiceSuccessDates),
       quizResults: validBooleanMap(parsed.quizResults),
+      volumeFinals: validBooleanMap(parsed.volumeFinals),
     };
   } catch {
     return defaultActivity;
@@ -65,6 +67,13 @@ export async function recordPracticeSuccess(challengeId: string) {
 export async function recordQuizResult(lessonId: string, correct: boolean) {
   const activity = await touchActivity();
   const next = { ...activity, quizResults: { ...activity.quizResults, [lessonId]: correct } };
+  await saveActivity(next);
+  return next;
+}
+
+export async function recordVolumeFinalSuccess(volumeId: string) {
+  const activity = await touchActivity();
+  const next = { ...activity, volumeFinals: { ...(activity.volumeFinals ?? {}), [volumeId]: true } };
   await saveActivity(next);
   return next;
 }

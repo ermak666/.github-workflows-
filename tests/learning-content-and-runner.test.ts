@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { cheatItems } from "../shared/cheat-sheets";
 import { practiceChallenges } from "../shared/practice-challenges";
 import { runLearningPython } from "../lib/learning-python";
+import { getLessonNavigation, getNextVolume, isVolumeComplete, volumes } from "../shared/course-data";
+import { getVolumeFinalTask, volumeFinalTasks } from "../shared/volume-final-tasks";
 
 describe("полнота учебного контура", () => {
   it("содержит широкую шпаргалку по ключевым темам", () => {
@@ -48,5 +50,24 @@ describe("учебный запуск Python", () => {
 
   it("не выполняет опасные операции", () => {
     expect(runLearningPython('import os\nprint(os.listdir())').error).toContain("безопасные основы");
+  });
+});
+
+describe("последовательное прохождение томов", () => {
+  it("находит соседние уроки внутри тома и следующий том в каталоге", () => {
+    const firstVolume = volumes[0];
+    const navigation = getLessonNavigation(firstVolume.lessons[1].id);
+    expect(navigation?.previousLesson?.id).toBe(firstVolume.lessons[0].id);
+    expect(navigation?.nextLesson?.id).toBe(firstVolume.lessons[2].id);
+    expect(getNextVolume(firstVolume.id)?.id).toBe(volumes[1].id);
+    expect(getNextVolume(volumes.at(-1)?.id)).toBeUndefined();
+  });
+
+  it("открывает итоговую задачу только после всех уроков и задаёт её для каждого тома", () => {
+    const firstVolume = volumes[0];
+    expect(isVolumeComplete(firstVolume, firstVolume.lessons.slice(0, -1).map((lesson) => lesson.id))).toBe(false);
+    expect(isVolumeComplete(firstVolume, firstVolume.lessons.map((lesson) => lesson.id))).toBe(true);
+    expect(volumeFinalTasks).toHaveLength(volumes.length);
+    expect(getVolumeFinalTask(firstVolume.id)?.correctIndex).toBeGreaterThanOrEqual(0);
   });
 });

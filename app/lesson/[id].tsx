@@ -11,7 +11,8 @@ import { loadCompletedLessons, recordQuizResult, toggleCompletedLesson } from "@
 import { createBookmarkCategory, loadBookmarks, toggleLessonBookmark, type BookmarkState } from "@/lib/lesson-bookmarks";
 import { useThemeContext } from "@/lib/theme-provider";
 import { useSoundFeedback } from "@/lib/sound-feedback";
-import { getLesson } from "@/shared/course-data";
+import { getLesson, getLessonNavigation, isVolumeComplete } from "@/shared/course-data";
+import { useColors } from "@/hooks/use-colors";
 import { getLessonQuiz } from "@/shared/lesson-quiz";
 
 export default function LessonScreen() {
@@ -28,6 +29,7 @@ export default function LessonScreen() {
   const [newCategory, setNewCategory] = useState("");
   const { fontScale } = useThemeContext();
   const { playSuccess, playTap } = useSoundFeedback();
+  const colors = useColors();
 
   useFocusEffect(useCallback(() => {
     loadCompletedLessons().then(setCompleted);
@@ -76,6 +78,9 @@ export default function LessonScreen() {
 
   const quiz = getLessonQuiz(lesson);
   const done = completed.includes(lesson.id);
+  const navigation = getLessonNavigation(lesson.id);
+  const isLastLesson = !navigation?.nextLesson;
+  const volumeFinished = navigation ? isVolumeComplete(navigation.volume, completed) : false;
 
   return (
     <ScreenContainer className="px-5">
@@ -111,6 +116,11 @@ export default function LessonScreen() {
         >
           <Text className={`text-base font-bold ${done ? "text-success" : "text-white"}`}>{done ? "✓ Урок пройден" : "Отметить как пройденный"}</Text>
         </Pressable>
+        <View className="mt-4 flex-row gap-3">
+          {navigation?.previousLesson ? <Pressable accessibilityRole="button" accessibilityLabel="Предыдущий урок" onPress={() => router.replace(`/lesson/${navigation.previousLesson?.id}` as never)} style={({ pressed }) => ({ flex: 1, alignItems: "center", borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.surface, paddingVertical: 14, opacity: pressed ? 0.76 : 1 })}><Text className="font-bold text-foreground">← Предыдущий урок</Text></Pressable> : null}
+          {navigation?.nextLesson ? <Pressable accessibilityRole="button" accessibilityLabel="Следующий урок" onPress={() => router.replace(`/lesson/${navigation.nextLesson?.id}` as never)} style={({ pressed }) => ({ flex: 1, alignItems: "center", borderRadius: 16, backgroundColor: colors.primary, paddingVertical: 14, opacity: pressed ? 0.76 : 1 })}><Text className="font-bold text-white">Следующий урок →</Text></Pressable> : <Pressable accessibilityRole="button" accessibilityLabel="Итоговое задание тома" disabled={!volumeFinished} onPress={() => router.replace(`/volume-final/${navigation?.volume.id}` as never)} style={({ pressed }) => ({ flex: 1, alignItems: "center", borderRadius: 16, backgroundColor: volumeFinished ? colors.primary : colors.surface, borderWidth: volumeFinished ? 0 : 1, borderColor: colors.border, paddingVertical: 14, opacity: pressed ? 0.76 : volumeFinished ? 1 : 0.62 })}><Text className={`text-center font-bold ${volumeFinished ? "text-white" : "text-muted"}`}>Итог тома →</Text></Pressable>}
+        </View>
+        {isLastLesson && !volumeFinished ? <Text className="mt-3 text-center text-sm leading-5 text-muted">Отметьте все уроки тома как пройденные, чтобы открыть итоговую мини-задачу.</Text> : null}
       </ScrollView>
     </ScreenContainer>
   );
