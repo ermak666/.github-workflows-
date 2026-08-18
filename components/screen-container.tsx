@@ -1,7 +1,11 @@
-import { View, type ViewProps } from "react-native";
+import { Pressable, Text, View, type ViewProps } from "react-native";
 import { SafeAreaView, type Edge } from "react-native-safe-area-context";
+import { usePathname, useRouter } from "expo-router";
 
+import { useColors } from "@/hooks/use-colors";
 import { cn } from "@/lib/utils";
+
+const PRIMARY_ROUTES = new Set(["/", "/learn", "/cheatsheet", "/progress"]);
 
 export interface ScreenContainerProps extends ViewProps {
   /**
@@ -47,6 +51,11 @@ export function ScreenContainer({
   style,
   ...props
 }: ScreenContainerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const colors = useColors();
+  const showHomeButton = !PRIMARY_ROUTES.has(pathname);
+
   return (
     <View
       className={cn(
@@ -61,7 +70,36 @@ export function ScreenContainer({
         className={cn("flex-1", safeAreaClassName)}
         style={style}
       >
-        <View className={cn("flex-1", className)}>{children}</View>
+        <View className={cn("flex-1", className)}>
+          {showHomeButton ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="На главную"
+              onPress={() => router.replace("/" as never)}
+              style={({ pressed }) => ({
+                position: "absolute",
+                zIndex: 20,
+                top: 8,
+                right: 16,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.surface,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                opacity: pressed ? 0.76 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+                shadowColor: "#1C1B3A",
+                shadowOpacity: 0.12,
+                shadowRadius: 8,
+                elevation: 2,
+              })}
+            >
+              <Text style={{ color: colors.foreground, fontSize: 13, fontWeight: "700" }}>⌂ На главную</Text>
+            </Pressable>
+          ) : null}
+          {children}
+        </View>
       </SafeAreaView>
     </View>
   );
