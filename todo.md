@@ -202,3 +202,7 @@
 - [x] Определить целевой GitHub-репозиторий пользователя
 - [x] Загрузить исходный код и workflow Android-сборки в GitHub
 - [x] Проверить видимость workflow Build Android APK Directly в GitHub Actions
+- [ ] Создать Android-ключ подписи и добавить его в защищённые GitHub Secrets
+- [x] Добавить workflow подписанного Android-релиза и автоматического GitHub Release
+- [x] Запустить первую прямую APK-сборку и проверить результат
+- [ ] Получить разрешение GitHub на создание Actions Secrets для постоянной релизной подписи

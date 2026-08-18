@@ -32,4 +32,18 @@ describe("автоматическая APK-сборка", () => {
     expect(guide).toContain("app-debug.apk");
     expect(guide).toContain("не для публикации в Google Play");
   });
+
+  it("содержит подписанный Android-релиз с AAB и GitHub Release по тегу", () => {
+    const workflow = readProjectFile(".github/workflows/android-signed-release.yml");
+    const signingScript = readProjectFile("scripts/release-signing.gradle");
+    const guide = readProjectFile("docs/GITHUB_SIGNED_RELEASE.md");
+    expect(workflow).toContain('"release-v*"');
+    expect(workflow).toContain("app:assembleRelease app:bundleRelease --no-daemon");
+    expect(workflow).toContain("secrets.ANDROID_KEYSTORE_BASE64");
+    expect(workflow).toContain("gh release create");
+    expect(workflow).toContain("app-release.aab");
+    expect(signingScript).toContain("ANDROID_KEYSTORE_PASSWORD");
+    expect(signingScript).not.toMatch(/storePassword\s+['"][^'"]+/);
+    expect(guide).toContain("ANDROID_KEYSTORE_BASE64");
+  });
 });
