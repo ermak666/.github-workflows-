@@ -199,3 +199,6 @@
 - [x] Исправить контраст текста на светлой карточке мини‑тренажёра в тёмной теме
 - [x] Подготовить GitHub Actions workflow для прямой Android Gradle-сборки APK
 - [x] Описать безопасную настройку ключа подписи и секретов GitHub
+- [x] Определить целевой GitHub-репозиторий пользователя
+- [x] Загрузить исходный код и workflow Android-сборки в GitHub
+- [x] Проверить видимость workflow Build Android APK Directly в GitHub Actions
