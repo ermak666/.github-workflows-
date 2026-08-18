@@ -1,3 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* The preview iframe can briefly exist before React Native Web mounts.
+   Keep that short interval informative rather than showing an empty white canvas. */
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  background: #f5f3ff;
+}
+
+#root:empty {
+  align-items: center;
+  background: #f5f3ff;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+#root:empty::before {
+  color: #312e81;
+  content: "Python без страха · загружаем уроки…";
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}

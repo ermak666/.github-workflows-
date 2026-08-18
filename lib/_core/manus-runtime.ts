@@ -76,11 +76,15 @@ function handleMessage(event: MessageEvent<unknown>): void {
   if (!data || data.type !== "SpacePreviewerChannel") return;
 
   const { payload } = data;
-  if (!payload || payload.to !== "content") return;
+  if (!payload || payload.to !== "content" || payload.from !== "container") return;
 
   if (payload.type === "setSafeAreaInsets" && isValidInsets(payload.payload) && safeAreaCallback) {
     const insets = payload.payload;
     const frame = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+    if (frame.width <= 0 || frame.height <= 0) {
+      log("Ignored safe area update with an empty iframe frame");
+      return;
+    }
     safeAreaCallback({ insets, frame });
     log(
       `Received safe area insets from parent: top=${insets.top}, bottom=${insets.bottom}, left=${insets.left}, right=${insets.right}`,
@@ -103,14 +107,21 @@ export function subscribeSafeAreaInsets(callback: SafeAreaCallback): () => void 
 /**
  * Initialize Manus Runtime - just notifies parent that app is ready
  */
-export function initManusRuntime(): void {
-  if (!isWeb() || !isInIframe()) return;
-  if (initialized) return;
+export function initManusRuntime(): () => void {
+  if (!isWeb() || !isInIframe()) return () => undefined;
+  if (initialized) return () => undefined;
   initialized = true;
 
   log("initManusRuntime called");
   window.addEventListener("message", handleMessage);
   sendToParent("appDevServerReady", {});
+
+  return () => {
+    window.removeEventListener("message", handleMessage);
+    safeAreaCallback = null;
+    initialized = false;
+    log("Disposed preview iframe listeners");
+  };
 }
 
 /**

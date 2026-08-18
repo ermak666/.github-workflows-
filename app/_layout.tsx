@@ -10,6 +10,7 @@ import * as Notifications from "expo-notifications";
 import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { SoundFeedbackProvider } from "@/lib/sound-feedback";
+import { AppErrorBoundary } from "@/components/app-error-boundary";
 import { inspectKnowledgeReview } from "@/lib/knowledge-review";
 import { loadCompletedLessons } from "@/lib/course-progress";
 import {
@@ -26,6 +27,11 @@ import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-run
 const DEFAULT_WEB_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 };
 const DEFAULT_WEB_FRAME: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
+function getWebFrame(): Rect {
+  if (Platform.OS !== "web" || typeof window === "undefined") return DEFAULT_WEB_FRAME;
+  return { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+}
+
 if (Platform.OS !== "web") {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }),
@@ -39,14 +45,14 @@ export const unstable_settings = {
 export default function RootLayout() {
   const router = useRouter();
   const initialInsets = initialWindowMetrics?.insets ?? DEFAULT_WEB_INSETS;
-  const initialFrame = initialWindowMetrics?.frame ?? DEFAULT_WEB_FRAME;
+  const initialFrame = initialWindowMetrics?.frame ?? getWebFrame();
 
   const [insets, setInsets] = useState<EdgeInsets>(initialInsets);
   const [frame, setFrame] = useState<Rect>(initialFrame);
 
   // Initialize Manus runtime for cookie injection from parent container
   useEffect(() => {
-    initManusRuntime();
+    return initManusRuntime();
   }, []);
 
   const handleSafeAreaUpdate = useCallback((metrics: Metrics) => {
@@ -56,8 +62,14 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
+    const updateWebFrame = () => setFrame(getWebFrame());
+    updateWebFrame();
+    window.addEventListener("resize", updateWebFrame);
     const unsubscribe = subscribeSafeAreaInsets(handleSafeAreaUpdate);
-    return () => unsubscribe();
+    return () => {
+      window.removeEventListener("resize", updateWebFrame);
+      unsubscribe();
+    };
   }, [handleSafeAreaUpdate]);
 
   useEffect(() => {
@@ -152,7 +164,7 @@ export default function RootLayout() {
 
   if (shouldOverrideSafeArea) {
     return (
-      <ThemeProvider><SoundFeedbackProvider>
+      <AppErrorBoundary><ThemeProvider><SoundFeedbackProvider>
         <SafeAreaProvider initialMetrics={providerInitialMetrics}>
           <SafeAreaFrameContext.Provider value={frame}>
             <SafeAreaInsetsContext.Provider value={insets}>
@@ -160,13 +172,13 @@ export default function RootLayout() {
             </SafeAreaInsetsContext.Provider>
           </SafeAreaFrameContext.Provider>
         </SafeAreaProvider>
-      </SoundFeedbackProvider></ThemeProvider>
+      </SoundFeedbackProvider></ThemeProvider></AppErrorBoundary>
     );
   }
 
   return (
-    <ThemeProvider><SoundFeedbackProvider>
+    <AppErrorBoundary><ThemeProvider><SoundFeedbackProvider>
       <SafeAreaProvider initialMetrics={providerInitialMetrics}>{content}</SafeAreaProvider>
-    </SoundFeedbackProvider></ThemeProvider>
+    </SoundFeedbackProvider></ThemeProvider></AppErrorBoundary>
   );
 }

@@ -84,7 +84,7 @@ export default function PracticeScreen() {
   return (
     <ScreenContainer className="px-5">
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <BackButton onPress={() => router.back()} />
+        <BackButton onPress={() => router.replace("/learn" as never)} />
         <Text className="text-3xl font-bold text-foreground">Мини‑тренажёр</Text>
         <Text className="mt-2 text-base leading-6 text-muted">Переходите от простых шагов к серьёзным проектам. Каждая задача — маленькая самостоятельная победа.</Text>
         <View className="mt-5 flex-row flex-wrap gap-2">

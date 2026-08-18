@@ -85,7 +85,7 @@ export default function LessonScreen() {
   return (
     <ScreenContainer className="px-5">
       <ScrollView contentContainerStyle={{ paddingBottom: 42 }} showsVerticalScrollIndicator={false}>
-        <BackButton label="К содержанию" onPress={() => router.back()} />
+        <BackButton label="К содержанию" onPress={() => router.replace(`/volume/${navigation?.volume.id ?? "junior"}` as never)} />
         <View className="overflow-hidden rounded-[30px] border border-[#354062] bg-[#151A36] p-5 shadow-sm">
           <View className="absolute -right-9 -top-10 h-36 w-36 rounded-full bg-[#7056E8] opacity-45" />
           <View className="self-start rounded-full bg-[#242B4D] px-3 py-2"><Text className="text-xs font-bold tracking-widest text-[#C9C6FF]">УРОК {navigation?.lessonIndex ?? lesson.number} ИЗ {navigation?.lessonCount ?? 1}</Text></View>

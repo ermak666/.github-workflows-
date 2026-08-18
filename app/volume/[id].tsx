@@ -29,7 +29,7 @@ export default function VolumeScreen() {
         contentContainerStyle={{ paddingBottom: 36 }}
         ListHeaderComponent={
           <View className="pb-5 pt-2">
-            <BackButton onPress={() => router.back()} />
+            <BackButton onPress={() => router.replace("/learn" as never)} />
             <Text className="text-3xl font-bold leading-10 text-foreground">{volume.title}</Text>
             <Text className="mt-2 text-base leading-6 text-muted">{volume.lessons.length} уроков. Открывайте по одному — маленький шаг тоже движение вперёд.</Text>
           </View>

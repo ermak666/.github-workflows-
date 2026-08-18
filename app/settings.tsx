@@ -21,7 +21,7 @@ export default function SettingsScreen() {
   return (
     <ScreenContainer className="px-5">
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        <BackButton onPress={() => router.back()} />
+        <BackButton onPress={() => router.replace("/" as never)} />
         <Text className="text-3xl font-bold text-foreground">Комфорт чтения</Text>
         <Text className="mt-2 text-base leading-6 text-muted">Настройки хранятся только на этом устройстве и применяются сразу.</Text>
 
