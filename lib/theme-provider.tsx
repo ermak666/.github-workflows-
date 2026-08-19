@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { Appearance, View, useColorScheme as useSystemColorScheme } from "react-native";
+import { Appearance, View } from "react-native";
 import { colorScheme as nativewindColorScheme, vars } from "nativewind";
 
 import { SchemeColors, type ColorScheme } from "@/constants/theme";
@@ -19,8 +19,7 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const systemScheme = useSystemColorScheme() ?? "light";
-  const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
+  const [colorScheme, setColorSchemeState] = useState<ColorScheme>("dark");
   const [fontScale, setFontScaleState] = useState(1);
   const [highContrast, setHighContrastState] = useState(false);
   const [reduceMotion, setReduceMotionState] = useState(false);
@@ -44,9 +43,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [highContrast, reduceMotion]);
 
   const setColorScheme = useCallback((scheme: ColorScheme) => {
-    setColorSchemeState(scheme);
-    applyScheme(scheme);
-    persist(scheme, fontScale);
+    void scheme;
+    setColorSchemeState("dark");
+    applyScheme("dark");
+    persist("dark", fontScale);
   }, [applyScheme, fontScale, persist]);
 
   const setFontScale = useCallback((scale: number) => {
@@ -66,11 +66,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     loadReadingPreferences().then((preferences) => {
-      setColorSchemeState(preferences.colorScheme);
+      setColorSchemeState("dark");
       setFontScaleState(preferences.fontScale);
       setHighContrastState(preferences.highContrast);
       setReduceMotionState(preferences.reduceMotion);
-      applyScheme(preferences.colorScheme);
+      applyScheme("dark");
     });
   }, [applyScheme]);
 

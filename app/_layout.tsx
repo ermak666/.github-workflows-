@@ -155,7 +155,7 @@ export default function RootLayout() {
             <Stack.Screen name="bookmarks" />
             <Stack.Screen name="knowledge-check" />
           </Stack>
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
         </QueryClientProvider>
       </trpc.Provider>
     </GestureHandlerRootView>

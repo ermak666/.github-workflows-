@@ -12,7 +12,7 @@ export type ReadingPreferences = {
 };
 
 export const defaultReadingPreferences: ReadingPreferences = {
-  colorScheme: "light",
+  colorScheme: "dark",
   fontScale: 1,
   highContrast: false,
   reduceMotion: false,
@@ -24,7 +24,7 @@ export async function loadReadingPreferences(): Promise<ReadingPreferences> {
   try {
     const parsed = JSON.parse(raw) as Partial<ReadingPreferences>;
     return {
-      colorScheme: parsed.colorScheme === "dark" ? "dark" : "light",
+      colorScheme: "dark",
       fontScale: [0.9, 1, 1.15].includes(parsed.fontScale ?? 1) ? parsed.fontScale ?? 1 : 1,
       highContrast: parsed.highContrast === true,
       reduceMotion: parsed.reduceMotion === true,
@@ -35,5 +35,5 @@ export async function loadReadingPreferences(): Promise<ReadingPreferences> {
 }
 
 export async function saveReadingPreferences(value: ReadingPreferences) {
-  await AsyncStorage.setItem(KEY, JSON.stringify(value));
+  await AsyncStorage.setItem(KEY, JSON.stringify({ ...value, colorScheme: "dark" }));
 }

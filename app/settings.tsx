@@ -15,7 +15,7 @@ const fontOptions = [
 
 export default function SettingsScreen() {
   const router = useRouter();
-  const { colorScheme, setColorScheme, fontScale, setFontScale } = useThemeContext();
+  const { fontScale, setFontScale } = useThemeContext();
   const { playTap } = useSoundFeedback();
   const colors = useColors();
   return (
@@ -26,14 +26,9 @@ export default function SettingsScreen() {
         <Text className="mt-2 text-base leading-6 text-muted">Настройки хранятся только на этом устройстве и применяются сразу.</Text>
 
         <View className="mt-7 rounded-3xl border border-border bg-surface p-5">
-          <Text className="text-lg font-bold text-foreground">Тема оформления</Text>
-          <Text className="mt-1 text-sm leading-5 text-muted">Выберите спокойную тему, удобную для ваших глаз.</Text>
-          <View className="mt-4 flex-row gap-3">
-            {(["light", "dark"] as const).map((scheme) => {
-              const active = colorScheme === scheme;
-              return <Pressable key={scheme} onPress={() => { playTap(); setColorScheme(scheme); }} style={({ pressed }) => [{ flex: 1, alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: active ? colors.primary : colors.border, backgroundColor: active ? colorScheme === "dark" ? "#28274B" : "#E9EAFE" : colors.background, paddingHorizontal: 12, paddingVertical: 16 }, { opacity: pressed ? 0.78 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }]}><View className="h-9 w-9 items-center justify-center rounded-full bg-surface"><Text className="text-xl">{scheme === "light" ? "☀︎" : "◐"}</Text></View><Text className={`mt-2 font-bold ${active ? "text-primary" : "text-foreground"}`}>{scheme === "light" ? "Светлая" : "Тёмная"}</Text><Text className={`mt-1 text-xs ${active ? "text-primary" : "text-muted"}`}>{active ? "Выбрана" : "Выбрать"}</Text></Pressable>;
-            })}
-          </View>
+          <Text className="text-lg font-bold text-foreground">Тёмное оформление</Text>
+          <Text className="mt-1 text-sm leading-5 text-muted">В приложении используется единственная тёмная тема: светлый текст на тёмном фоне, чтобы читать было спокойно в любое время суток.</Text>
+          <View className="mt-4 flex-row items-center rounded-2xl border border-primary bg-[#28274B] p-4"><View className="h-9 w-9 items-center justify-center rounded-full bg-[#111426]"><Text className="text-xl text-white">◐</Text></View><View className="ml-3 flex-1"><Text className="font-bold text-white">Тёмная тема</Text><Text className="mt-1 text-xs text-[#D3D7FF]">Всегда включена</Text></View><Text className="text-lg font-bold text-primary">✓</Text></View>
         </View>
 
         <View className="mt-4 rounded-3xl border border-border bg-surface p-5">

@@ -14,12 +14,11 @@ function contrast(first: string, second: string) {
 }
 
 describe("контраст учебного интерфейса", () => {
-  it("сохраняет читаемый основной текст на фоне и карточках в обеих темах", () => {
-    for (const scheme of ["light", "dark"] as const) {
-      expect(contrast(themeConfig.themeColors.foreground[scheme], themeConfig.themeColors.background[scheme])).toBeGreaterThanOrEqual(7);
-      expect(contrast(themeConfig.themeColors.foreground[scheme], themeConfig.themeColors.surface[scheme])).toBeGreaterThanOrEqual(7);
-      expect(contrast(themeConfig.themeColors.muted[scheme], themeConfig.themeColors.background[scheme])).toBeGreaterThanOrEqual(4.5);
-    }
+  it("сохраняет читаемый светлый текст на тёмном фоне и карточках", () => {
+    const scheme = "dark" as const;
+    expect(contrast(themeConfig.themeColors.foreground[scheme], themeConfig.themeColors.background[scheme])).toBeGreaterThanOrEqual(7);
+    expect(contrast(themeConfig.themeColors.foreground[scheme], themeConfig.themeColors.surface[scheme])).toBeGreaterThanOrEqual(7);
+    expect(contrast(themeConfig.themeColors.muted[scheme], themeConfig.themeColors.background[scheme])).toBeGreaterThanOrEqual(4.5);
   });
 
   it("сохраняет высокий контраст текста учебного запуска на тёмной кодовой карточке", () => {
