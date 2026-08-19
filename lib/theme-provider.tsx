@@ -12,6 +12,8 @@ type ThemeContextValue = {
   setFontScale: (scale: number) => void;
   highContrast: boolean;
   setHighContrast: (value: boolean) => void;
+  reduceMotion: boolean;
+  setReduceMotion: (value: boolean) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -21,6 +23,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>(systemScheme);
   const [fontScale, setFontScaleState] = useState(1);
   const [highContrast, setHighContrastState] = useState(false);
+  const [reduceMotion, setReduceMotionState] = useState(false);
 
   const applyScheme = useCallback((scheme: ColorScheme) => {
     nativewindColorScheme.set(scheme);
@@ -36,9 +39,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const persist = useCallback((scheme: ColorScheme, scale: number, contrast = highContrast) => {
-    void saveReadingPreferences({ colorScheme: scheme, fontScale: scale, highContrast: contrast });
-  }, [highContrast]);
+  const persist = useCallback((scheme: ColorScheme, scale: number, contrast = highContrast, reduced = reduceMotion) => {
+    void saveReadingPreferences({ colorScheme: scheme, fontScale: scale, highContrast: contrast, reduceMotion: reduced });
+  }, [highContrast, reduceMotion]);
 
   const setColorScheme = useCallback((scheme: ColorScheme) => {
     setColorSchemeState(scheme);
@@ -56,11 +59,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     persist(colorScheme, fontScale, value);
   }, [colorScheme, fontScale, persist]);
 
+  const setReduceMotion = useCallback((value: boolean) => {
+    setReduceMotionState(value);
+    persist(colorScheme, fontScale, highContrast, value);
+  }, [colorScheme, fontScale, highContrast, persist]);
+
   useEffect(() => {
     loadReadingPreferences().then((preferences) => {
       setColorSchemeState(preferences.colorScheme);
       setFontScaleState(preferences.fontScale);
       setHighContrastState(preferences.highContrast);
+      setReduceMotionState(preferences.reduceMotion);
       applyScheme(preferences.colorScheme);
     });
   }, [applyScheme]);
@@ -93,8 +102,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setFontScale,
       highContrast,
       setHighContrast,
+      reduceMotion,
+      setReduceMotion,
     }),
-    [colorScheme, fontScale, highContrast, setColorScheme, setFontScale, setHighContrast],
+    [colorScheme, fontScale, highContrast, reduceMotion, setColorScheme, setFontScale, setHighContrast, setReduceMotion],
   );
 
   return (

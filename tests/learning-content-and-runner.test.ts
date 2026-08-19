@@ -52,8 +52,14 @@ describe("учебный запуск Python", () => {
     expect(runLearningPython('import os\nprint(os.listdir())').error).toContain("безопасные основы");
   });
 
-  it("не выдаёт успех для циклов и сетевых библиотек, которые учебный запуск не поддерживает", () => {
-    expect(runLearningPython("for number in range(5):\n    print(number)").error).toContain("безопасные основы");
+  it("выполняет ограниченный цикл for/range и сохраняет пошаговый след", () => {
+    const result = runLearningPython("for number in range(5):\n    if number == 2:\n        continue\n    print(number)");
+    expect(result.error).toBeUndefined();
+    expect(result.output).toEqual(["0", "1", "3", "4"]);
+    expect(result.trace.length).toBeGreaterThan(4);
+  });
+
+  it("не выполняет сетевые библиотеки", () => {
     expect(runLearningPython('import requests\nrequests.get("https://example.com")').error).toContain("безопасные основы");
   });
 });

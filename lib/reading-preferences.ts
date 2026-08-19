@@ -8,12 +8,14 @@ export type ReadingPreferences = {
   colorScheme: ColorScheme;
   fontScale: number;
   highContrast: boolean;
+  reduceMotion: boolean;
 };
 
 export const defaultReadingPreferences: ReadingPreferences = {
   colorScheme: "light",
   fontScale: 1,
   highContrast: false,
+  reduceMotion: false,
 };
 
 export async function loadReadingPreferences(): Promise<ReadingPreferences> {
@@ -25,6 +27,7 @@ export async function loadReadingPreferences(): Promise<ReadingPreferences> {
       colorScheme: parsed.colorScheme === "dark" ? "dark" : "light",
       fontScale: [0.9, 1, 1.15].includes(parsed.fontScale ?? 1) ? parsed.fontScale ?? 1 : 1,
       highContrast: parsed.highContrast === true,
+      reduceMotion: parsed.reduceMotion === true,
     };
   } catch {
     return defaultReadingPreferences;
