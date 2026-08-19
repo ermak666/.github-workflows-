@@ -21,16 +21,17 @@ describe("автоматическая APK-сборка", () => {
     expect(workflow).not.toMatch(/EXPO_TOKEN:\s*[^${\s]/);
   });
 
-  it("содержит независимую Gradle-сборку тестового APK с загрузкой артефакта", () => {
+  it("содержит независимую автономную release APK-сборку с загрузкой артефакта", () => {
     const workflow = readProjectFile(".github/workflows/android-direct-apk.yml");
     const guide = readProjectFile("docs/GITHUB_DIRECT_APK.md");
     expect(workflow).toContain("npx expo prebuild --platform android --no-install");
-    expect(workflow).toContain("./gradlew app:assembleDebug --no-daemon");
+    expect(workflow).toContain("./gradlew app:assembleRelease --no-daemon");
     expect(workflow).toContain("actions/upload-artifact@v4");
     expect(workflow).toContain("if-no-files-found: error");
     expect(workflow).not.toContain("EXPO_TOKEN");
-    expect(guide).toContain("app-debug.apk");
-    expect(guide).toContain("не для публикации в Google Play");
+    expect(guide).toContain("app-release.apk");
+    expect(guide).toContain("встроенным JavaScript-бандлом");
+    expect(guide).toContain("для Google Play нужен отдельный подписанный release-workflow");
   });
 
   it("содержит подписанный Android-релиз с AAB и GitHub Release по тегу", () => {

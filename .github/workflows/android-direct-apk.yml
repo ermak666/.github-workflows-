@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-debug-apk:
-    name: Build installable Android APK
+  build-standalone-apk:
+    name: Build standalone Android APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -45,15 +45,15 @@ jobs:
       - name: Generate the native Android project
         run: npx expo prebuild --platform android --no-install
 
-      - name: Build installable debug APK
+      - name: Build standalone release APK with bundled JavaScript
         working-directory: android
-        run: ./gradlew app:assembleDebug --no-daemon
+        run: ./gradlew app:assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: python-bez-strakha-debug-apk-${{ github.run_number }}
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: python-bez-strakha-standalone-apk-${{ github.run_number }}
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
