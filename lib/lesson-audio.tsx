@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createAudioPlayer, setAudioModeAsync, setIsAudioActiveAsync, type AudioPlayer } from "expo-audio";
 
 import { lessonVoiceovers, type LessonVoiceoverId } from "@/lib/lesson-voiceovers";
 
@@ -41,6 +41,8 @@ export function LessonAudioProvider({ children }: { children: React.ReactNode })
     setDuration(0);
   }, []);
 
+  useEffect(() => () => { operationRef.current += 1; dispose(); }, [dispose]);
+
   const stop = useCallback(() => {
     operationRef.current += 1;
     dispose();
@@ -55,10 +57,12 @@ export function LessonAudioProvider({ children }: { children: React.ReactNode })
     setActiveLessonId(null);
     setPlaybackState("stopped");
     try {
-      await setAudioModeAsync({ playsInSilentMode: true });
+      await setIsAudioActiveAsync(true);
+      await setAudioModeAsync({ playsInSilentMode: true, interruptionModeAndroid: "duckOthers", interruptionMode: "mixWithOthers" });
       if (operationRef.current !== operation) return;
 
-      const player = createAudioPlayer(lessonVoiceovers[lessonId]);
+      const player = createAudioPlayer(lessonVoiceovers[lessonId], { downloadFirst: true, updateInterval: 250 });
+      player.volume = 1;
       player.playbackRate = playbackRate;
       playerRef.current = player;
       subscriptionRef.current = player.addListener("playbackStatusUpdate", (status) => {
@@ -69,7 +73,8 @@ export function LessonAudioProvider({ children }: { children: React.ReactNode })
       setActiveLessonId(lessonId);
       setPlaybackState("playing");
       player.play();
-    } catch {
+    } catch (error) {
+      console.warn("[lesson-audio] Playback initialization failed", error);
       if (operationRef.current === operation) stop();
     }
   }, [dispose, playbackRate, stop]);
