@@ -6,10 +6,13 @@ import { courseManifests } from "../series-core/course-manifest";
 
 describe("реестр серии «Разработка без страха»", () => {
   it("содержит отдельные приложения для всех согласованных направлений", () => {
-    expect(seriesCourses).toHaveLength(18);
+    expect(seriesCourses).toHaveLength(19);
     expect(seriesCourses.map((course) => course.id)).toContain("game-modding");
     expect(seriesCourses.map((course) => course.id)).toContain("react");
     expect(seriesCourses.map((course) => course.id)).toContain("angular");
+    expect(seriesCourses.map((course) => course.id)).toContain("nodejs");
+    expect(seriesCourses.map((course) => course.id)).toContain("powershell-web");
+    expect(seriesCourses.map((course) => course.id)).not.toContain("linux");
   });
 
   it("сохраняет единый учебный контракт для каждого приложения", () => {
