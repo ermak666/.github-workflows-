@@ -15,6 +15,15 @@ describe("аудиоуправление и результат учебного 
     expect(player).toContain("const stop = useCallback");
   });
 
+  it("подготавливает встроенный MP3 и освобождает общий плеер для production APK", () => {
+    const player = readProjectFile("lib/lesson-audio.tsx");
+    expect(player).toContain("setIsAudioActiveAsync(true)");
+    expect(player).toContain("downloadFirst: true");
+    expect(player).toContain('interruptionModeAndroid: "duckOthers"');
+    expect(player).toContain("useEffect(() => {");
+    expect(player).toContain("Playback initialization failed");
+  });
+
   it("показывает управление воспроизведением и не выводит успех поверх ошибки", () => {
     const lesson = readProjectFile("app/lesson/[id].tsx");
     const codeCard = readProjectFile("components/code-card.tsx");
