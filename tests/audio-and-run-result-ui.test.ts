@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -13,15 +13,21 @@ describe("аудиоуправление и результат учебного 
     expect(player).toContain("const pause = useCallback");
     expect(player).toContain("const resume = useCallback");
     expect(player).toContain("const stop = useCallback");
+    expect(player).not.toContain("setIsAudioActiveAsync");
+    expect(player).not.toContain("downloadFirst");
   });
 
-  it("подготавливает встроенный MP3 и освобождает общий плеер для production APK", () => {
-    const player = readProjectFile("lib/lesson-audio.tsx");
-    expect(player).toContain("setIsAudioActiveAsync(true)");
-    expect(player).toContain("downloadFirst: true");
-    expect(player).toContain('interruptionModeAndroid: "duckOthers"');
-    expect(player).toContain("useEffect(() => {");
-    expect(player).toContain("Playback initialization failed");
+  it("включает каждую записанную озвучку Algieba в приложение и показывает её только при наличии MP3", () => {
+    const voiceovers = readProjectFile("lib/lesson-voiceovers.ts");
+    const lesson = readProjectFile("app/lesson/[id].tsx");
+    const sources = [...voiceovers.matchAll(/require\("(\.\.\/assets\/audio\/lesson-intros\/[^\"]+\.mp3)"\)/g)].map((match) => match[1]);
+
+    expect(sources.length).toBeGreaterThan(100);
+    for (const source of sources) {
+      expect(existsSync(resolve(projectRoot, "lib", source))).toBe(true);
+    }
+    expect(lesson).toContain("lessonVoiceovers[lesson.id as LessonVoiceoverId]");
+    expect(lesson).toContain("▶ Слушать Algieba");
   });
 
   it("показывает управление воспроизведением и не выводит успех поверх ошибки", () => {
@@ -41,5 +47,13 @@ describe("аудиоуправление и результат учебного 
     expect(practice).toContain('bg-[#E9EAFE] p-5');
     expect(practice).toContain('text-[#171A33]">{challenge.title}');
     expect(practice).toContain('text-[#171A33]">ИИ-помощник по коду');
+  });
+
+  it("не имитирует запуск NumPy и Pandas, а оставляет код с разбором; базовый пример остаётся запускаемым", () => {
+    const sandbox = readProjectFile("app/sandbox.tsx");
+    expect(sandbox).toContain("runnable: false");
+    expect(sandbox).toContain("runnable: true");
+    expect(sandbox).toContain("active.runnable ?");
+    expect(sandbox).not.toContain("lab === \"basic\" ? runBasicCode(code) : active.output");
   });
 });
