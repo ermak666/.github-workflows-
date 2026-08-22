@@ -13,6 +13,11 @@ describe("аудиоуправление и результат учебного 
     expect(player).toContain("const pause = useCallback");
     expect(player).toContain("const resume = useCallback");
     expect(player).toContain("const stop = useCallback");
+    expect(player).toContain("Asset.fromModule(source)");
+    expect(player).toContain("await asset.downloadAsync()");
+    expect(player).toContain("createAudioPlayer({ uri: asset.localUri })");
+    expect(player).toContain("setAudioError(");
+    expect(player).not.toContain("catch {");
     expect(player).not.toContain("setIsAudioActiveAsync");
     expect(player).not.toContain("downloadFirst");
   });
@@ -33,7 +38,12 @@ describe("аудиоуправление и результат учебного 
     }
     expect(mappedIds).toEqual(expect.arrayContaining([...courseIds, ...supplementalIds]));
     expect(lesson).toContain("lessonVoiceovers[lesson.id as LessonVoiceoverId]");
+    expect(lesson).toContain("const hasLessonVoiceover = lessonAudioSource !== undefined");
+    expect(lesson).toContain("hasLessonVoiceover && !isCurrentVoiceover");
+    expect(lesson).not.toContain("lessonAudioSource && !isCurrentVoiceover");
+    expect(lesson).not.toContain("if (!lessonAudioSource");
     expect(lesson).toContain("▶ Слушать Algieba");
+    expect(lesson).toContain("{audioError ?");
   });
 
   it("показывает управление воспроизведением и не даёт запуск неподдерживаемым примерам", () => {

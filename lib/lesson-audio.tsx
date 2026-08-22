@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
+import { Asset } from "expo-asset";
 
 import { lessonVoiceovers, type LessonVoiceoverId } from "@/lib/lesson-voiceovers";
 
@@ -12,6 +13,7 @@ type LessonAudioValue = {
   position: number;
   duration: number;
   playbackRate: number;
+  audioError: string | null;
   playLesson: (lessonId: LessonVoiceoverId) => Promise<void>;
   pause: () => void;
   resume: () => void;
@@ -31,6 +33,7 @@ export function LessonAudioProvider({ children }: { children: React.ReactNode })
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackRate, setPlaybackRateState] = useState(1);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   const dispose = useCallback(() => {
     subscriptionRef.current?.remove();
@@ -49,16 +52,27 @@ export function LessonAudioProvider({ children }: { children: React.ReactNode })
   }, [dispose]);
 
   const playLesson = useCallback(async (lessonId: LessonVoiceoverId) => {
+    const source = lessonVoiceovers[lessonId];
+    if (source === undefined) {
+      setAudioError("Запись этого урока не найдена в приложении.");
+      return;
+    }
     const operation = operationRef.current + 1;
     operationRef.current = operation;
     dispose();
     setActiveLessonId(null);
     setPlaybackState("stopped");
+    setAudioError(null);
     try {
       await setAudioModeAsync({ playsInSilentMode: true });
       if (operationRef.current !== operation) return;
 
-      const player = createAudioPlayer(lessonVoiceovers[lessonId]);
+      const asset = Asset.fromModule(source);
+      await asset.downloadAsync();
+      if (operationRef.current !== operation) return;
+      if (!asset.localUri) throw new Error("Локальный файл записи не подготовлен.");
+
+      const player = createAudioPlayer({ uri: asset.localUri });
       player.playbackRate = playbackRate;
       playerRef.current = player;
       subscriptionRef.current = player.addListener("playbackStatusUpdate", (status) => {
@@ -69,8 +83,11 @@ export function LessonAudioProvider({ children }: { children: React.ReactNode })
       setActiveLessonId(lessonId);
       setPlaybackState("playing");
       player.play();
-    } catch {
-      if (operationRef.current === operation) stop();
+    } catch (error) {
+      if (operationRef.current === operation) {
+        setAudioError(error instanceof Error ? `Не удалось запустить запись: ${error.message}` : "Не удалось запустить запись. Проверьте громкость медиа и повторите попытку.");
+        stop();
+      }
     }
   }, [dispose, playbackRate, stop]);
 
@@ -100,7 +117,7 @@ export function LessonAudioProvider({ children }: { children: React.ReactNode })
     setPosition(next);
   }, [duration, position]);
 
-  const value = useMemo(() => ({ activeLessonId, playbackState, position, duration, playbackRate, playLesson, pause, resume, stop, setPlaybackRate, seekBy }), [activeLessonId, duration, pause, playbackRate, playbackState, playLesson, position, resume, seekBy, setPlaybackRate, stop]);
+  const value = useMemo(() => ({ activeLessonId, playbackState, position, duration, playbackRate, audioError, playLesson, pause, resume, stop, setPlaybackRate, seekBy }), [activeLessonId, audioError, duration, pause, playbackRate, playbackState, playLesson, position, resume, seekBy, setPlaybackRate, stop]);
   return <LessonAudioContext.Provider value={value}>{children}</LessonAudioContext.Provider>;
 }
 
@@ -113,6 +130,7 @@ export function useLessonAudio() {
     position: 0,
     duration: 0,
     playbackRate: 1,
+    audioError: null,
     playLesson: async () => {},
     pause: () => {},
     resume: () => {},
