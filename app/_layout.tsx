@@ -154,6 +154,7 @@ export default function RootLayout() {
             <Stack.Screen name="api-workshop" />
             <Stack.Screen name="bookmarks" />
             <Stack.Screen name="knowledge-check" />
+            <Stack.Screen name="audio-smoke" />
           </Stack>
           <StatusBar style="light" />
         </QueryClientProvider>
