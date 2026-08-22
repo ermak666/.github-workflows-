@@ -36,7 +36,7 @@ jobs:
           script: |
             adb install -r android/app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c
-            adb shell am start -W -a android.intent.action.VIEW -d "manuspythonbezstrakha://audio-smoke" com.app.pythonbezstrakha
+            adb shell am start -W -a android.intent.action.VIEW -d "manusstrakha://audio-smoke" com.app.pythonbezstrakha
             sleep 10
             adb logcat -d | tee audio-smoke.log
             grep -F "[audio-smoke] PASS playing=true duration=positive" audio-smoke.log
