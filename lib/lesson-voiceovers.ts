@@ -108,6 +108,22 @@ export const lessonVoiceovers = {
   "web-bots-30": require("../assets/audio/lesson-intros/web-bots-30.mp3"),
   "web-bots-31": require("../assets/audio/lesson-intros/web-bots-31.mp3"),
   "web-bots-32": require("../assets/audio/lesson-intros/web-bots-32.mp3"),
+  "junior-unpacking": require("../assets/audio/lesson-intros/junior-unpacking.mp3"),
+  "junior-nested-data": require("../assets/audio/lesson-intros/junior-nested-data.mp3"),
+  "junior-docstrings": require("../assets/audio/lesson-intros/junior-docstrings.mp3"),
+  "junior-debug-basics": require("../assets/audio/lesson-intros/junior-debug-basics.mp3"),
+  "middle-comprehensions": require("../assets/audio/lesson-intros/middle-comprehensions.mp3"),
+  "middle-pyproject": require("../assets/audio/lesson-intros/middle-pyproject.mp3"),
+  "middle-validation": require("../assets/audio/lesson-intros/middle-validation.mp3"),
+  "middle-layering": require("../assets/audio/lesson-intros/middle-layering.mp3"),
+  "senior-security-basics": require("../assets/audio/lesson-intros/senior-security-basics.mp3"),
+  "senior-ci-basics": require("../assets/audio/lesson-intros/senior-ci-basics.mp3"),
+  "senior-retries": require("../assets/audio/lesson-intros/senior-retries.mp3"),
+  "senior-observability": require("../assets/audio/lesson-intros/senior-observability.mp3"),
+  "web-api-first": require("../assets/audio/lesson-intros/web-api-first.mp3"),
+  "web-pagination": require("../assets/audio/lesson-intros/web-pagination.mp3"),
+  "web-data-quality": require("../assets/audio/lesson-intros/web-data-quality.mp3"),
+  "web-deploy-checklist": require("../assets/audio/lesson-intros/web-deploy-checklist.mp3"),
 } as const;
 
 export type LessonVoiceoverId = keyof typeof lessonVoiceovers;

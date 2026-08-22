@@ -17,28 +17,36 @@ describe("аудиоуправление и результат учебного 
     expect(player).not.toContain("downloadFirst");
   });
 
-  it("включает каждую записанную озвучку Algieba в приложение и показывает её только при наличии MP3", () => {
+  it("включает существующую записанную озвучку Algieba для каждого из 124 уроков", () => {
     const voiceovers = readProjectFile("lib/lesson-voiceovers.ts");
     const lesson = readProjectFile("app/lesson/[id].tsx");
+    const baseCourse = JSON.parse(readProjectFile("shared/course-content.json")) as { volumes: Array<{ lessons: Array<{ id: string }> }> };
+    const supplemental = readProjectFile("shared/supplemental-lessons.ts");
     const sources = [...voiceovers.matchAll(/require\("(\.\.\/assets\/audio\/lesson-intros\/[^\"]+\.mp3)"\)/g)].map((match) => match[1]);
+    const mappedIds = [...voiceovers.matchAll(/"([^\"]+)": require\(/g)].map((match) => match[1]);
+    const courseIds = baseCourse.volumes.flatMap((volume) => volume.lessons.map((item) => item.id));
+    const supplementalIds = [...supplemental.matchAll(/lesson\("([^\"]+)"/g)].map((match) => match[1]);
 
-    expect(sources.length).toBeGreaterThan(100);
+    expect(sources).toHaveLength(124);
     for (const source of sources) {
       expect(existsSync(resolve(projectRoot, "lib", source))).toBe(true);
     }
+    expect(mappedIds).toEqual(expect.arrayContaining([...courseIds, ...supplementalIds]));
     expect(lesson).toContain("lessonVoiceovers[lesson.id as LessonVoiceoverId]");
     expect(lesson).toContain("▶ Слушать Algieba");
   });
 
-  it("показывает управление воспроизведением и не выводит успех поверх ошибки", () => {
+  it("показывает управление воспроизведением и не даёт запуск неподдерживаемым примерам", () => {
     const lesson = readProjectFile("app/lesson/[id].tsx");
     const codeCard = readProjectFile("components/code-card.tsx");
     const practice = readProjectFile("app/practice.tsx");
     expect(lesson).toContain("Ⅱ Пауза");
     expect(lesson).toContain("▶ Продолжить");
     expect(lesson).toContain("■ Стоп");
-    expect(codeCard).toContain("runOutput && !runError");
-    expect(codeCard).toContain("КОМАНДА НЕ ВЫПОЛНЕНА");
+    expect(codeCard).toContain("const supportsRun = useMemo");
+    expect(codeCard).toContain("{supportsRun ?");
+    expect(codeCard).not.toContain("КОМАНДА НЕ ВЫПОЛНЕНА");
+    expect(codeCard).not.toContain("Пока не умею выполнить");
     expect(practice).toContain("runOutput && !runError");
   });
 

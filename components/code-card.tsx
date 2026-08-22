@@ -14,10 +14,10 @@ export function CodeCard({ code }: { code: string }) {
   const [preparedInput, setPreparedInput] = useState("4");
   const [runOutput, setRunOutput] = useState<string[] | null>(null);
   const [runVariables, setRunVariables] = useState<Record<string, Value> | null>(null);
-  const [runError, setRunError] = useState<string | null>(null);
   const [runTrace, setRunTrace] = useState<LearningTraceStep[]>([]);
   const [traceOpen, setTraceOpen] = useState(false);
-  const needsInput = useMemo(() => /\binput\s*\(/.test(code), [code]);
+  const supportsRun = useMemo(() => !runLearningPython(code).error, [code]);
+  const needsInput = useMemo(() => supportsRun && /\binput\s*\(/.test(code), [code, supportsRun]);
   if (!code.trim()) return null;
   return (
     <View className="rounded-3xl border border-[#303758] bg-[#111426] p-5 shadow-sm">
@@ -33,15 +33,14 @@ export function CodeCard({ code }: { code: string }) {
         </Pressable>
       </View>
       <Text selectable className="font-mono text-[13px] leading-6 text-[#F7F5FF]">{code}</Text>
-      <View className="mt-5 border-t border-[#303758] pt-4">
+      {supportsRun ? <View className="mt-5 border-t border-[#303758] pt-4">
         <Text className="text-xs font-bold tracking-wide text-[#BFC6FF]">УЧЕБНЫЙ ЗАПУСК</Text>
         {needsInput ? <TextInput value={preparedInput} onChangeText={setPreparedInput} placeholder="Ответы для input(), каждый с новой строки" placeholderTextColor="#9BA1C9" multiline className="mt-3 rounded-xl border border-[#41496F] bg-[#171D37] px-3 py-3 font-mono text-sm text-white" /> : null}
-        <Pressable accessibilityRole="button" onPress={() => { const result = runLearningPython(code, preparedInput); setRunOutput(result.output); setRunVariables(result.variables); setRunError(result.error ?? null); setRunTrace(result.trace); setTraceOpen(false); }} style={({ pressed }) => [{ marginTop: 12, alignSelf: "flex-start", borderRadius: 12, backgroundColor: "#8F7BFF", paddingHorizontal: 14, paddingVertical: 10 }, { opacity: pressed ? 0.78 : 1 }]}><Text className="font-bold text-white">▶ Запустить пример</Text></Pressable>
-        {runOutput && !runError ? <View className="mt-3 rounded-xl bg-[#0B0F22] p-3"><Text className="text-xs font-bold text-[#91E0C4]">РЕЗУЛЬТАТ ВЫПОЛНЕНИЯ</Text>{runOutput.length ? <Text className="mt-2 font-mono text-sm leading-5 text-[#F4F2FF]">{runOutput.join("\n")}</Text> : null}{runVariables && Object.keys(runVariables).length ? <View className={runOutput.length ? "mt-3 border-t border-[#303758] pt-3" : "mt-2"}><Text className="text-xs font-bold text-[#BFC6FF]">ПЕРЕМЕННЫЕ ПОСЛЕ ЗАПУСКА</Text><Text className="mt-2 font-mono text-sm leading-5 text-[#F4F2FF]">{Object.entries(runVariables).map(([name, value]) => `${name} = ${formatVariable(value)}`).join("\n")}</Text></View> : null}{!runOutput.length && (!runVariables || !Object.keys(runVariables).length) ? <Text className="mt-2 font-mono text-sm leading-5 text-[#F4F2FF]">Код выполнился: он не печатает текст и не сохраняет переменные.</Text> : null}</View> : null}
+        <Pressable accessibilityRole="button" onPress={() => { const result = runLearningPython(code, preparedInput); setRunOutput(result.output); setRunVariables(result.variables); setRunTrace(result.trace); setTraceOpen(false); }} style={({ pressed }) => [{ marginTop: 12, alignSelf: "flex-start", borderRadius: 12, backgroundColor: "#8F7BFF", paddingHorizontal: 14, paddingVertical: 10 }, { opacity: pressed ? 0.78 : 1 }]}><Text className="font-bold text-white">▶ Запустить пример</Text></Pressable>
+        {runOutput ? <View className="mt-3 rounded-xl bg-[#0B0F22] p-3"><Text className="text-xs font-bold text-[#91E0C4]">РЕЗУЛЬТАТ ВЫПОЛНЕНИЯ</Text>{runOutput.length ? <Text className="mt-2 font-mono text-sm leading-5 text-[#F4F2FF]">{runOutput.join("\n")}</Text> : null}{runVariables && Object.keys(runVariables).length ? <View className={runOutput.length ? "mt-3 border-t border-[#303758] pt-3" : "mt-2"}><Text className="text-xs font-bold text-[#BFC6FF]">ПЕРЕМЕННЫЕ ПОСЛЕ ЗАПУСКА</Text><Text className="mt-2 font-mono text-sm leading-5 text-[#F4F2FF]">{Object.entries(runVariables).map(([name, value]) => `${name} = ${formatVariable(value)}`).join("\n")}</Text></View> : null}{!runOutput.length && (!runVariables || !Object.keys(runVariables).length) ? <Text className="mt-2 font-mono text-sm leading-5 text-[#F4F2FF]">Код выполнился: он не печатает текст и не сохраняет переменные.</Text> : null}</View> : null}
         {runTrace.length ? <View className="mt-3 rounded-xl border border-[#303758] bg-[#171D37] p-3"><Pressable accessibilityRole="button" onPress={() => setTraceOpen((open) => !open)} style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}><Text className="text-xs font-bold text-[#BFC6FF]">{traceOpen ? "⌃ СКРЫТЬ" : "⌄ ПОКАЗАТЬ"} ШАГИ ВЫПОЛНЕНИЯ · {runTrace.length}</Text></Pressable>{traceOpen ? <View className="mt-3 gap-2">{runTrace.slice(0, 16).map((step, index) => <View key={`${step.line}-${index}`} className="rounded-lg bg-[#0B0F22] p-2"><Text className="text-[11px] font-bold text-[#91E0C4]">ШАГ {index + 1}</Text><Text className="mt-1 font-mono text-xs text-[#F4F2FF]">{step.line}</Text><Text className="mt-1 font-mono text-[11px] text-[#BFC6FF]">{Object.keys(step.variables).length ? Object.entries(step.variables).map(([name, value]) => `${name}=${formatVariable(value)}`).join(" · ") : "переменных пока нет"}{step.output.length ? ` · вывод: ${step.output.at(-1)}` : ""}</Text></View>)}{runTrace.length > 16 ? <Text className="text-xs text-[#AAB2D9]">Показаны первые 16 шагов из {runTrace.length}.</Text> : null}</View> : null}</View> : null}
-        {runError ? <View className="mt-3 rounded-xl bg-[#3B1724] p-3"><Text className="text-xs font-bold text-[#FFB9C5]">КОМАНДА НЕ ВЫПОЛНЕНА</Text><Text className="mt-2 text-sm leading-5 text-[#FFE2E8]">{runError}</Text></View> : null}
         <Text className="mt-3 text-xs leading-4 text-[#AAB2D9]">Запуск учебный: без файлов, сети и сторонних библиотек.</Text>
-      </View>
+      </View> : null}
     </View>
   );
 }
